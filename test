@@ -1,0 +1,430 @@
+
+CREATE TABLE E_1
+(
+	c1                   CHAR(18)  NOT NULL 
+);
+
+CREATE UNIQUE INDEX XPKE_1 ON E_1
+(c1   ASC);
+
+ALTER TABLE E_1
+	ADD CONSTRAINT  XPKE_1 PRIMARY KEY (c1);
+
+CREATE TABLE E_2
+(
+	d1                   CHAR(18)  NOT NULL 
+);
+
+CREATE UNIQUE INDEX XPKE_2 ON E_2
+(d1   ASC);
+
+ALTER TABLE E_2
+	ADD CONSTRAINT  XPKE_2 PRIMARY KEY (d1);
+
+CREATE TABLE E_3
+(
+	d2                   CHAR(18)  NOT NULL 
+);
+
+CREATE UNIQUE INDEX XPKE_3 ON E_3
+(d2   ASC);
+
+ALTER TABLE E_3
+	ADD CONSTRAINT  XPKE_3 PRIMARY KEY (d2);
+
+CREATE TABLE E_1_E_3
+(
+	c1                   CHAR(18)  NOT NULL ,
+	d2                   CHAR(18)  NOT NULL 
+);
+
+CREATE UNIQUE INDEX XPKE_1_E_3 ON E_1_E_3
+(c1   ASC,d2   ASC);
+
+ALTER TABLE E_1_E_3
+	ADD CONSTRAINT  XPKE_1_E_3 PRIMARY KEY (c1,d2);
+
+CREATE TABLE E_4
+(
+	d4                   CHAR(18)  NOT NULL 
+);
+
+CREATE UNIQUE INDEX XPKE_4 ON E_4
+(d4   ASC);
+
+ALTER TABLE E_4
+	ADD CONSTRAINT  XPKE_4 PRIMARY KEY (d4);
+
+CREATE TABLE E_6
+(
+	e3                   CHAR(18)  NOT NULL 
+);
+
+CREATE UNIQUE INDEX XPKE_6 ON E_6
+(e3   ASC);
+
+ALTER TABLE E_6
+	ADD CONSTRAINT  XPKE_6 PRIMARY KEY (e3);
+
+ALTER TABLE E_2
+	ADD (
+CONSTRAINT R_1 FOREIGN KEY (d1) REFERENCES E_1 (c1));
+
+ALTER TABLE E_1_E_3
+	ADD (
+CONSTRAINT R_3 FOREIGN KEY (c1) REFERENCES E_1 (c1));
+
+ALTER TABLE E_1_E_3
+	ADD (
+CONSTRAINT R_4 FOREIGN KEY (d2) REFERENCES E_3 (d2));
+
+CREATE  TRIGGER  tD_E_1 AFTER DELETE ON E_1 for each row
+-- erwin Builtin Trigger
+-- DELETE trigger on E_1 
+DECLARE NUMROWS INTEGER;
+BEGIN
+    /* erwin Builtin Trigger */
+    /* E_1  E_1_E_3 on parent delete restrict */
+    /* ERWIN_RELATION:CHECKSUM="00018a59", PARENT_OWNER="", PARENT_TABLE="E_1"
+    CHILD_OWNER="", CHILD_TABLE="E_1_E_3"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_3", FK_COLUMNS="c1" */
+    SELECT count(*) INTO NUMROWS
+      FROM E_1_E_3
+      WHERE
+        /*  %JoinFKPK(E_1_E_3,:%Old," = "," AND") */
+        E_1_E_3.c1 = :old.c1;
+    IF (NUMROWS > 0)
+    THEN
+      raise_application_error(
+        -20001,
+        'Cannot delete E_1 because E_1_E_3 exists.'
+      );
+    END IF;
+
+    /* erwin Builtin Trigger */
+    /* E_1  E_2 on parent delete restrict */
+    /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="E_1"
+    CHILD_OWNER="", CHILD_TABLE="E_2"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_1", FK_COLUMNS="d1" */
+    SELECT count(*) INTO NUMROWS
+      FROM E_2
+      WHERE
+        /*  %JoinFKPK(E_2,:%Old," = "," AND") */
+        E_2.d1 = :old.c1;
+    IF (NUMROWS > 0)
+    THEN
+      raise_application_error(
+        -20001,
+        'Cannot delete E_1 because E_2 exists.'
+      );
+    END IF;
+
+
+-- erwin Builtin Trigger
+END;
+/
+
+CREATE  TRIGGER tU_E_1 AFTER UPDATE ON E_1 for each row
+-- erwin Builtin Trigger
+-- UPDATE trigger on E_1 
+DECLARE NUMROWS INTEGER;
+BEGIN
+  /* erwin Builtin Trigger */
+  /* E_1  E_1_E_3 on parent update restrict */
+  /* ERWIN_RELATION:CHECKSUM="0001d09a", PARENT_OWNER="", PARENT_TABLE="E_1"
+    CHILD_OWNER="", CHILD_TABLE="E_1_E_3"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_3", FK_COLUMNS="c1" */
+  IF
+    /* %JoinPKPK(:%Old,:%New," <> "," OR ") */
+    :old.c1 <> :new.c1
+  THEN
+    SELECT count(*) INTO NUMROWS
+      FROM E_1_E_3
+      WHERE
+        /*  %JoinFKPK(E_1_E_3,:%Old," = "," AND") */
+        E_1_E_3.c1 = :old.c1;
+    IF (NUMROWS > 0)
+    THEN 
+      raise_application_error(
+        -20005,
+        'Cannot update E_1 because E_1_E_3 exists.'
+      );
+    END IF;
+  END IF;
+
+  /* erwin Builtin Trigger */
+  /* E_1  E_2 on parent update restrict */
+  /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="E_1"
+    CHILD_OWNER="", CHILD_TABLE="E_2"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_1", FK_COLUMNS="d1" */
+  IF
+    /* %JoinPKPK(:%Old,:%New," <> "," OR ") */
+    :old.c1 <> :new.c1
+  THEN
+    SELECT count(*) INTO NUMROWS
+      FROM E_2
+      WHERE
+        /*  %JoinFKPK(E_2,:%Old," = "," AND") */
+        E_2.d1 = :old.c1;
+    IF (NUMROWS > 0)
+    THEN 
+      raise_application_error(
+        -20005,
+        'Cannot update E_1 because E_2 exists.'
+      );
+    END IF;
+  END IF;
+
+
+-- erwin Builtin Trigger
+END;
+/
+
+
+CREATE  TRIGGER tI_E_2 BEFORE INSERT ON E_2 for each row
+-- erwin Builtin Trigger
+-- INSERT trigger on E_2 
+DECLARE NUMROWS INTEGER;
+BEGIN
+    /* erwin Builtin Trigger */
+    /* E_1  E_2 on child insert restrict */
+    /* ERWIN_RELATION:CHECKSUM="0000d57b", PARENT_OWNER="", PARENT_TABLE="E_1"
+    CHILD_OWNER="", CHILD_TABLE="E_2"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_1", FK_COLUMNS="d1" */
+    SELECT count(*) INTO NUMROWS
+      FROM E_1
+      WHERE
+        /* %JoinFKPK(:%New,E_1," = "," AND") */
+        :new.d1 = E_1.c1;
+    IF (
+      /* %NotnullFK(:%New," IS NOT NULL AND") */
+      
+      NUMROWS = 0
+    )
+    THEN
+      raise_application_error(
+        -20002,
+        'Cannot insert E_2 because E_1 does not exist.'
+      );
+    END IF;
+
+
+-- erwin Builtin Trigger
+END;
+/
+
+CREATE  TRIGGER tU_E_2 AFTER UPDATE ON E_2 for each row
+-- erwin Builtin Trigger
+-- UPDATE trigger on E_2 
+DECLARE NUMROWS INTEGER;
+BEGIN
+  /* erwin Builtin Trigger */
+  /* E_1  E_2 on child update restrict */
+  /* ERWIN_RELATION:CHECKSUM="0000d43f", PARENT_OWNER="", PARENT_TABLE="E_1"
+    CHILD_OWNER="", CHILD_TABLE="E_2"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_1", FK_COLUMNS="d1" */
+  SELECT count(*) INTO NUMROWS
+    FROM E_1
+    WHERE
+      /* %JoinFKPK(:%New,E_1," = "," AND") */
+      :new.d1 = E_1.c1;
+  IF (
+    /* %NotnullFK(:%New," IS NOT NULL AND") */
+    
+    NUMROWS = 0
+  )
+  THEN
+    raise_application_error(
+      -20007,
+      'Cannot update E_2 because E_1 does not exist.'
+    );
+  END IF;
+
+
+-- erwin Builtin Trigger
+END;
+/
+
+
+CREATE  TRIGGER  tD_E_3 AFTER DELETE ON E_3 for each row
+-- erwin Builtin Trigger
+-- DELETE trigger on E_3 
+DECLARE NUMROWS INTEGER;
+BEGIN
+    /* erwin Builtin Trigger */
+    /* E_3  E_1_E_3 on parent delete restrict */
+    /* ERWIN_RELATION:CHECKSUM="0000bee6", PARENT_OWNER="", PARENT_TABLE="E_3"
+    CHILD_OWNER="", CHILD_TABLE="E_1_E_3"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_4", FK_COLUMNS="d2" */
+    SELECT count(*) INTO NUMROWS
+      FROM E_1_E_3
+      WHERE
+        /*  %JoinFKPK(E_1_E_3,:%Old," = "," AND") */
+        E_1_E_3.d2 = :old.d2;
+    IF (NUMROWS > 0)
+    THEN
+      raise_application_error(
+        -20001,
+        'Cannot delete E_3 because E_1_E_3 exists.'
+      );
+    END IF;
+
+
+-- erwin Builtin Trigger
+END;
+/
+
+CREATE  TRIGGER tU_E_3 AFTER UPDATE ON E_3 for each row
+-- erwin Builtin Trigger
+-- UPDATE trigger on E_3 
+DECLARE NUMROWS INTEGER;
+BEGIN
+  /* erwin Builtin Trigger */
+  /* E_3  E_1_E_3 on parent update restrict */
+  /* ERWIN_RELATION:CHECKSUM="0000d924", PARENT_OWNER="", PARENT_TABLE="E_3"
+    CHILD_OWNER="", CHILD_TABLE="E_1_E_3"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_4", FK_COLUMNS="d2" */
+  IF
+    /* %JoinPKPK(:%Old,:%New," <> "," OR ") */
+    :old.d2 <> :new.d2
+  THEN
+    SELECT count(*) INTO NUMROWS
+      FROM E_1_E_3
+      WHERE
+        /*  %JoinFKPK(E_1_E_3,:%Old," = "," AND") */
+        E_1_E_3.d2 = :old.d2;
+    IF (NUMROWS > 0)
+    THEN 
+      raise_application_error(
+        -20005,
+        'Cannot update E_3 because E_1_E_3 exists.'
+      );
+    END IF;
+  END IF;
+
+
+-- erwin Builtin Trigger
+END;
+/
+
+
+CREATE  TRIGGER tI_E_1_E_3 BEFORE INSERT ON E_1_E_3 for each row
+-- erwin Builtin Trigger
+-- INSERT trigger on E_1_E_3 
+DECLARE NUMROWS INTEGER;
+BEGIN
+    /* erwin Builtin Trigger */
+    /* E_3  E_1_E_3 on child insert restrict */
+    /* ERWIN_RELATION:CHECKSUM="0001b71a", PARENT_OWNER="", PARENT_TABLE="E_3"
+    CHILD_OWNER="", CHILD_TABLE="E_1_E_3"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_4", FK_COLUMNS="d2" */
+    SELECT count(*) INTO NUMROWS
+      FROM E_3
+      WHERE
+        /* %JoinFKPK(:%New,E_3," = "," AND") */
+        :new.d2 = E_3.d2;
+    IF (
+      /* %NotnullFK(:%New," IS NOT NULL AND") */
+      
+      NUMROWS = 0
+    )
+    THEN
+      raise_application_error(
+        -20002,
+        'Cannot insert E_1_E_3 because E_3 does not exist.'
+      );
+    END IF;
+
+    /* erwin Builtin Trigger */
+    /* E_1  E_1_E_3 on child insert restrict */
+    /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="E_1"
+    CHILD_OWNER="", CHILD_TABLE="E_1_E_3"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_3", FK_COLUMNS="c1" */
+    SELECT count(*) INTO NUMROWS
+      FROM E_1
+      WHERE
+        /* %JoinFKPK(:%New,E_1," = "," AND") */
+        :new.c1 = E_1.c1;
+    IF (
+      /* %NotnullFK(:%New," IS NOT NULL AND") */
+      
+      NUMROWS = 0
+    )
+    THEN
+      raise_application_error(
+        -20002,
+        'Cannot insert E_1_E_3 because E_1 does not exist.'
+      );
+    END IF;
+
+
+-- erwin Builtin Trigger
+END;
+/
+
+CREATE  TRIGGER tU_E_1_E_3 AFTER UPDATE ON E_1_E_3 for each row
+-- erwin Builtin Trigger
+-- UPDATE trigger on E_1_E_3 
+DECLARE NUMROWS INTEGER;
+BEGIN
+  /* erwin Builtin Trigger */
+  /* E_3  E_1_E_3 on child update restrict */
+  /* ERWIN_RELATION:CHECKSUM="0001c001", PARENT_OWNER="", PARENT_TABLE="E_3"
+    CHILD_OWNER="", CHILD_TABLE="E_1_E_3"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_4", FK_COLUMNS="d2" */
+  SELECT count(*) INTO NUMROWS
+    FROM E_3
+    WHERE
+      /* %JoinFKPK(:%New,E_3," = "," AND") */
+      :new.d2 = E_3.d2;
+  IF (
+    /* %NotnullFK(:%New," IS NOT NULL AND") */
+    
+    NUMROWS = 0
+  )
+  THEN
+    raise_application_error(
+      -20007,
+      'Cannot update E_1_E_3 because E_3 does not exist.'
+    );
+  END IF;
+
+  /* erwin Builtin Trigger */
+  /* E_1  E_1_E_3 on child update restrict */
+  /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="E_1"
+    CHILD_OWNER="", CHILD_TABLE="E_1_E_3"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_3", FK_COLUMNS="c1" */
+  SELECT count(*) INTO NUMROWS
+    FROM E_1
+    WHERE
+      /* %JoinFKPK(:%New,E_1," = "," AND") */
+      :new.c1 = E_1.c1;
+  IF (
+    /* %NotnullFK(:%New," IS NOT NULL AND") */
+    
+    NUMROWS = 0
+  )
+  THEN
+    raise_application_error(
+      -20007,
+      'Cannot update E_1_E_3 because E_1 does not exist.'
+    );
+  END IF;
+
+
+-- erwin Builtin Trigger
+END;
+/
+
