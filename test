@@ -1,28 +1,32 @@
 
+CREATE TYPE [prabhat_physical_@##$__________:____]
+	FROM CHAR(18) NULL
+go
+
 CREATE TABLE [E_1]
 ( 
-	[One]                char(18)  NOT NULL 
+	[One_physical]       char varying()  NOT NULL 
 )
 go
 
 ALTER TABLE [E_1]
-	ADD CONSTRAINT [XPKE_1] PRIMARY KEY  CLUSTERED ([One] ASC)
+	ADD CONSTRAINT [XPKE_1] PRIMARY KEY  CLUSTERED ([One_physical] ASC)
 go
 
 CREATE TABLE [E_1_E_2]
 ( 
-	[One]                char(18)  NOT NULL ,
-	[two]                double precision  NOT NULL 
+	[One_physical]       char varying()  NOT NULL ,
+	[two]                binary()  NOT NULL 
 )
 go
 
 ALTER TABLE [E_1_E_2]
-	ADD CONSTRAINT [XPKE_1_E_2] PRIMARY KEY  CLUSTERED ([One] ASC,[two] ASC)
+	ADD CONSTRAINT [XPKE_1_E_2] PRIMARY KEY  CLUSTERED ([One_physical] ASC,[two] ASC)
 go
 
 CREATE TABLE [E_2]
 ( 
-	[two]                double precision  NOT NULL 
+	[two]                binary()  NOT NULL 
 )
 go
 
@@ -32,8 +36,8 @@ go
 
 CREATE TABLE [E_2_E_4]
 ( 
-	[two]                double precision  NOT NULL ,
-	[four]               char(18)  NOT NULL 
+	[two]                Datetimeoffset()  NOT NULL ,
+	[four]               Hierarchyid  NOT NULL 
 )
 go
 
@@ -62,16 +66,32 @@ ALTER TABLE [E_4]
 	ADD CONSTRAINT [XPKE_4] PRIMARY KEY  CLUSTERED ([four] ASC)
 go
 
+CREATE TABLE [E_8]
+( 
+	[prabhat]            char(18)  NOT NULL 
+)
+go
+
+ALTER TABLE [E_8]
+	ADD CONSTRAINT [XPKE_8] PRIMARY KEY  CLUSTERED ([prabhat] ASC)
+go
+
+CREATE TABLE [newentitybyprabhat]
+( 
+	[new1]               char(18)  NULL 
+)
+go
+
 CREATE VIEW [new_view]([v1],[v2])
 WITH SCHEMABINDING
 AS
 SELECT Expr_227,Expr_228
-	FROM [new_view]
+	FROM [new_view],[E_1]
 go
 
 
 ALTER TABLE [E_1_E_2]
-	ADD CONSTRAINT [R_2] FOREIGN KEY ([One]) REFERENCES [E_1]([One])
+	ADD CONSTRAINT [R_2] FOREIGN KEY ([One_physical]) REFERENCES [E_1]([One_physical])
 		ON DELETE NO ACTION
 		ON UPDATE NO ACTION
 go
@@ -113,15 +133,15 @@ BEGIN
            @errmsg  varchar(255)
     /* erwin Builtin Trigger */
     /* E_1  E_1_E_2 on parent delete no action */
-    /* ERWIN_RELATION:CHECKSUM="00010298", PARENT_OWNER="", PARENT_TABLE="E_1"
+    /* ERWIN_RELATION:CHECKSUM="00010cb7", PARENT_OWNER="", PARENT_TABLE="E_1"
     CHILD_OWNER="", CHILD_TABLE="E_1_E_2"
     P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
-    FK_CONSTRAINT="R_2", FK_COLUMNS="One" */
+    FK_CONSTRAINT="R_2", FK_COLUMNS="One_physical" */
     IF EXISTS (
       SELECT * FROM deleted,E_1_E_2
       WHERE
         /*  %JoinFKPK(E_1_E_2,deleted," = "," AND") */
-        E_1_E_2.One = deleted.One
+        E_1_E_2.One_physical = deleted.One_physical
     )
     BEGIN
       SELECT @errno  = 30001,
@@ -149,7 +169,7 @@ BEGIN
   DECLARE  @numrows int,
            @nullcnt int,
            @validcnt int,
-           @insOne char(18),
+           @insOne_physical char varying(),
            @errno   int,
            @severity int,
            @state    int,
@@ -158,19 +178,19 @@ BEGIN
   SELECT @numrows = @@rowcount
   /* erwin Builtin Trigger */
   /* E_1  E_1_E_2 on parent update no action */
-  /* ERWIN_RELATION:CHECKSUM="00011218", PARENT_OWNER="", PARENT_TABLE="E_1"
+  /* ERWIN_RELATION:CHECKSUM="00013035", PARENT_OWNER="", PARENT_TABLE="E_1"
     CHILD_OWNER="", CHILD_TABLE="E_1_E_2"
     P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
-    FK_CONSTRAINT="R_2", FK_COLUMNS="One" */
+    FK_CONSTRAINT="R_2", FK_COLUMNS="One_physical" */
   IF
     /* %ParentPK(" OR",UPDATE) */
-    UPDATE(One)
+    UPDATE(One_physical)
   BEGIN
     IF EXISTS (
       SELECT * FROM deleted,E_1_E_2
       WHERE
         /*  %JoinFKPK(E_1_E_2,deleted," = "," AND") */
-        E_1_E_2.One = deleted.One
+        E_1_E_2.One_physical = deleted.One_physical
     )
     BEGIN
       SELECT @errno  = 30005,
@@ -204,7 +224,7 @@ BEGIN
            @errmsg  varchar(255)
     /* erwin Builtin Trigger */
     /* E_2  E_1_E_2 on child delete no action */
-    /* ERWIN_RELATION:CHECKSUM="00021cee", PARENT_OWNER="", PARENT_TABLE="E_2"
+    /* ERWIN_RELATION:CHECKSUM="0002368b", PARENT_OWNER="", PARENT_TABLE="E_2"
     CHILD_OWNER="", CHILD_TABLE="E_1_E_2"
     P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
     FK_CONSTRAINT="R_3", FK_COLUMNS="two" */
@@ -230,16 +250,16 @@ BEGIN
     /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="E_1"
     CHILD_OWNER="", CHILD_TABLE="E_1_E_2"
     P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
-    FK_CONSTRAINT="R_2", FK_COLUMNS="One" */
+    FK_CONSTRAINT="R_2", FK_COLUMNS="One_physical" */
     IF EXISTS (SELECT * FROM deleted,E_1
       WHERE
         /* %JoinFKPK(deleted,E_1," = "," AND") */
-        deleted.One = E_1.One AND
+        deleted.One_physical = E_1.One_physical AND
         NOT EXISTS (
           SELECT * FROM E_1_E_2
           WHERE
             /* %JoinFKPK(E_1_E_2,E_1," = "," AND") */
-            E_1_E_2.One = E_1.One
+            E_1_E_2.One_physical = E_1.One_physical
         )
     )
     BEGIN
@@ -268,8 +288,8 @@ BEGIN
   DECLARE  @numrows int,
            @nullcnt int,
            @validcnt int,
-           @insOne char(18), 
-           @instwo double precision,
+           @insOne_physical char varying(), 
+           @instwo binary(),
            @errno   int,
            @severity int,
            @state    int,
@@ -278,7 +298,7 @@ BEGIN
   SELECT @numrows = @@rowcount
   /* erwin Builtin Trigger */
   /* E_2  E_1_E_2 on child update no action */
-  /* ERWIN_RELATION:CHECKSUM="00027216", PARENT_OWNER="", PARENT_TABLE="E_2"
+  /* ERWIN_RELATION:CHECKSUM="00027b7f", PARENT_OWNER="", PARENT_TABLE="E_2"
     CHILD_OWNER="", CHILD_TABLE="E_1_E_2"
     P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
     FK_CONSTRAINT="R_3", FK_COLUMNS="two" */
@@ -307,17 +327,17 @@ BEGIN
   /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="E_1"
     CHILD_OWNER="", CHILD_TABLE="E_1_E_2"
     P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
-    FK_CONSTRAINT="R_2", FK_COLUMNS="One" */
+    FK_CONSTRAINT="R_2", FK_COLUMNS="One_physical" */
   IF
     /* %ChildFK(" OR",UPDATE) */
-    UPDATE(One)
+    UPDATE(One_physical)
   BEGIN
     SELECT @nullcnt = 0
     SELECT @validcnt = count(*)
       FROM inserted,E_1
         WHERE
           /* %JoinFKPK(inserted,E_1) */
-          inserted.One = E_1.One
+          inserted.One_physical = E_1.One_physical
     /* %NotnullFK(inserted," IS NULL","select @nullcnt = count(*) from inserted where"," AND") */
     
     IF @validcnt + @nullcnt != @numrows
@@ -407,7 +427,7 @@ BEGIN
   DECLARE  @numrows int,
            @nullcnt int,
            @validcnt int,
-           @instwo double precision,
+           @instwo binary(),
            @errno   int,
            @severity int,
            @state    int,
@@ -549,8 +569,8 @@ BEGIN
   DECLARE  @numrows int,
            @nullcnt int,
            @validcnt int,
-           @instwo double precision, 
-           @insfour char(18),
+           @instwo Datetimeoffset(), 
+           @insfour Hierarchyid,
            @errno   int,
            @severity int,
            @state    int,
