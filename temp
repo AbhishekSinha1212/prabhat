@@ -1985,3 +1985,44 @@ END
 go
 
 
+
+
+execute sp_rename 'EMP.employee_number', 'prabhat', 'COLUMN'
+go
+
+execute sp_rename 'EMP.employee_number', 'supervisor', 'COLUMN'
+go
+
+execute sp_rename 'PAYMENT.employee_number', 'prabhat', 'COLUMN'
+go
+
+ALTER TABLE [EMP]
+DROP CONSTRAINT [reports_to]
+go
+
+ALTER TABLE [PAYMENT]
+DROP CONSTRAINT [receives]
+go
+
+ALTER TABLE [EMP]
+DROP CONSTRAINT [XPKEMPLOYEE]
+go
+
+DROP TABLE [E_10]
+go
+
+ALTER TABLE [EMP]
+ADD CONSTRAINT [XPKEMPLOYEE] PRIMARY KEY  CLUSTERED ([prabhat] ASC)
+go
+
+ALTER TABLE [EMP]
+	ADD CONSTRAINT [reports_to] FOREIGN KEY ([supervisor]) REFERENCES [EMP]([prabhat])
+		ON DELETE NO ACTION
+		ON UPDATE NO ACTION
+go
+
+ALTER TABLE [PAYMENT]
+	ADD CONSTRAINT [receives] FOREIGN KEY ([prabhat]) REFERENCES [EMP]([prabhat])
+		ON DELETE NO ACTION
+		ON UPDATE NO ACTION
+go
