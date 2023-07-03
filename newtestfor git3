@@ -1,0 +1,10 @@
+
+CREATE TABLE [E_7]
+( 
+	[gitchecking]        char(18)  NOT NULL 
+)
+go
+
+ALTER TABLE [E_7]
+ADD CONSTRAINT [XPKE_7] PRIMARY KEY  CLUSTERED ([gitchecking] ASC)
+go
