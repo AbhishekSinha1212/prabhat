@@ -1,10 +1,20 @@
 
 CREATE TABLE [E_1]
 ( 
-	[OKAY]               char(18)  NOT NULL 
+	[emc]                char(18)  NOT NULL 
 )
 go
 
 ALTER TABLE [E_1]
-	ADD CONSTRAINT [XPKE_1] PRIMARY KEY  CLUSTERED ([OKAY] ASC)
+	ADD CONSTRAINT [XPKE_1] PRIMARY KEY  CLUSTERED ([emc] ASC)
+go
+
+CREATE TABLE [E_2]
+( 
+	[okay]               char(18)  NOT NULL 
+)
+go
+
+ALTER TABLE [E_2]
+	ADD CONSTRAINT [XPKE_2] PRIMARY KEY  CLUSTERED ([okay] ASC)
 go
