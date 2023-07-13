@@ -1,46 +1,7 @@
 
 CREATE TABLE [E_1]
 ( 
-	[One]                CHAR  NOT NULL 
-)
-go
-
-CREATE TABLE [E_1_E_2]
-( 
-	[One]                CHAR  NOT NULL ,
-	[two]                CHAR  NOT NULL 
-)
-go
-
-CREATE TABLE [E_2]
-( 
-	[two]                CHAR  NOT NULL 
-)
-go
-
-CREATE TABLE [E_2_E_4]
-( 
-	[two]                CHAR  NOT NULL ,
-	[four]               CHAR  NOT NULL 
-)
-go
-
-CREATE TABLE [E_3]
-( 
-	[three]              CHAR  NOT NULL ,
-	[four]               CHAR  NULL 
-)
-go
-
-CREATE TABLE [E_4]
-( 
-	[four]               CHAR  NOT NULL 
-)
-go
-
-CREATE TABLE [E_7]
-( 
-	[new]                char(18)  NOT NULL 
+	[One]                char(18)  NOT NULL 
 )
 go
 
@@ -48,44 +9,66 @@ ALTER TABLE [E_1]
 	ADD CONSTRAINT [XPKE_1] PRIMARY KEY  CLUSTERED ([One] ASC)
 go
 
-ALTER TABLE [E_1]
-	ADD CONSTRAINT [XAK1E_1] UNIQUE ([One]  ASC)
+CREATE TABLE [E_1_E_2]
+( 
+	[One]                char(18)  NOT NULL ,
+	[two]                char(18)  NOT NULL 
+)
 go
 
 ALTER TABLE [E_1_E_2]
 	ADD CONSTRAINT [XPKE_1_E_2] PRIMARY KEY  CLUSTERED ([One] ASC,[two] ASC)
 go
 
+CREATE TABLE [E_2]
+( 
+	[two]                char(18)  NOT NULL 
+)
+go
+
 ALTER TABLE [E_2]
 	ADD CONSTRAINT [XPKE_2] PRIMARY KEY  CLUSTERED ([two] ASC)
 go
 
-ALTER TABLE [E_2]
-	ADD CONSTRAINT [XAK1E_2] UNIQUE ([two]  ASC)
+CREATE TABLE [E_2_E_4]
+( 
+	[two]                char(18)  NOT NULL ,
+	[four]               char(18)  NOT NULL 
+)
 go
 
 ALTER TABLE [E_2_E_4]
 	ADD CONSTRAINT [XPKE_2_E_4] PRIMARY KEY  CLUSTERED ([two] ASC,[four] ASC)
 go
 
+CREATE TABLE [E_3]
+( 
+	[three]              char(18)  NOT NULL ,
+	[four]               char(18)  NULL 
+)
+go
+
 ALTER TABLE [E_3]
 	ADD CONSTRAINT [XPKE_3] PRIMARY KEY  CLUSTERED ([three] ASC)
+go
+
+CREATE TABLE [E_4]
+( 
+	[four]               char(18)  NOT NULL 
+)
 go
 
 ALTER TABLE [E_4]
 	ADD CONSTRAINT [XPKE_4] PRIMARY KEY  CLUSTERED ([four] ASC)
 go
 
-ALTER TABLE [E_7]
-	ADD CONSTRAINT [XPKE_7] PRIMARY KEY  CLUSTERED ([new] ASC)
+CREATE VIEW [new_view]([v1],[v2])
+WITH SCHEMABINDING
+AS
+SELECT Expr_227,Expr_228
+	FROM [new_view]
 go
 
-
-ALTER TABLE [E_1_E_2]
-	ADD CONSTRAINT [R_1] FOREIGN KEY ([One]) REFERENCES [E_1]([One])
-		ON DELETE NO ACTION
-		ON UPDATE NO ACTION
-go
 
 ALTER TABLE [E_1_E_2]
 	ADD CONSTRAINT [R_2] FOREIGN KEY ([One]) REFERENCES [E_1]([One])
@@ -99,12 +82,6 @@ ALTER TABLE [E_1_E_2]
 		ON UPDATE NO ACTION
 go
 
-
-ALTER TABLE [E_2_E_4]
-	ADD CONSTRAINT [R_4] FOREIGN KEY ([two]) REFERENCES [E_2]([two])
-		ON DELETE NO ACTION
-		ON UPDATE NO ACTION
-go
 
 ALTER TABLE [E_2_E_4]
 	ADD CONSTRAINT [R_5] FOREIGN KEY ([two]) REFERENCES [E_2]([two])
@@ -136,28 +113,10 @@ BEGIN
            @errmsg  varchar(255)
     /* erwin Builtin Trigger */
     /* E_1  E_1_E_2 on parent delete no action */
-    /* ERWIN_RELATION:CHECKSUM="0001d820", PARENT_OWNER="", PARENT_TABLE="E_1"
+    /* ERWIN_RELATION:CHECKSUM="00010298", PARENT_OWNER="", PARENT_TABLE="E_1"
     CHILD_OWNER="", CHILD_TABLE="E_1_E_2"
     P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
     FK_CONSTRAINT="R_2", FK_COLUMNS="One" */
-    IF EXISTS (
-      SELECT * FROM deleted,E_1_E_2
-      WHERE
-        /*  %JoinFKPK(E_1_E_2,deleted," = "," AND") */
-        E_1_E_2.One = deleted.One
-    )
-    BEGIN
-      SELECT @errno  = 30001,
-             @errmsg = 'Cannot delete E_1 because E_1_E_2 exists.'
-      GOTO error
-    END
-
-    /* erwin Builtin Trigger */
-    /* E_1  E_1_E_2 on parent delete no action */
-    /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="E_1"
-    CHILD_OWNER="", CHILD_TABLE="E_1_E_2"
-    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
-    FK_CONSTRAINT="R_1", FK_COLUMNS="One" */
     IF EXISTS (
       SELECT * FROM deleted,E_1_E_2
       WHERE
@@ -190,7 +149,7 @@ BEGIN
   DECLARE  @numrows int,
            @nullcnt int,
            @validcnt int,
-           @insOne CHAR,
+           @insOne char(18),
            @errno   int,
            @severity int,
            @state    int,
@@ -199,33 +158,10 @@ BEGIN
   SELECT @numrows = @@rowcount
   /* erwin Builtin Trigger */
   /* E_1  E_1_E_2 on parent update no action */
-  /* ERWIN_RELATION:CHECKSUM="000207e5", PARENT_OWNER="", PARENT_TABLE="E_1"
+  /* ERWIN_RELATION:CHECKSUM="00011218", PARENT_OWNER="", PARENT_TABLE="E_1"
     CHILD_OWNER="", CHILD_TABLE="E_1_E_2"
     P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
     FK_CONSTRAINT="R_2", FK_COLUMNS="One" */
-  IF
-    /* %ParentPK(" OR",UPDATE) */
-    UPDATE(One)
-  BEGIN
-    IF EXISTS (
-      SELECT * FROM deleted,E_1_E_2
-      WHERE
-        /*  %JoinFKPK(E_1_E_2,deleted," = "," AND") */
-        E_1_E_2.One = deleted.One
-    )
-    BEGIN
-      SELECT @errno  = 30005,
-             @errmsg = 'Cannot update E_1 because E_1_E_2 exists.'
-      GOTO error
-    END
-  END
-
-  /* erwin Builtin Trigger */
-  /* E_1  E_1_E_2 on parent update no action */
-  /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="E_1"
-    CHILD_OWNER="", CHILD_TABLE="E_1_E_2"
-    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
-    FK_CONSTRAINT="R_1", FK_COLUMNS="One" */
   IF
     /* %ParentPK(" OR",UPDATE) */
     UPDATE(One)
@@ -268,7 +204,7 @@ BEGIN
            @errmsg  varchar(255)
     /* erwin Builtin Trigger */
     /* E_2  E_1_E_2 on child delete no action */
-    /* ERWIN_RELATION:CHECKSUM="0003207f", PARENT_OWNER="", PARENT_TABLE="E_2"
+    /* ERWIN_RELATION:CHECKSUM="00021cee", PARENT_OWNER="", PARENT_TABLE="E_2"
     CHILD_OWNER="", CHILD_TABLE="E_1_E_2"
     P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
     FK_CONSTRAINT="R_3", FK_COLUMNS="two" */
@@ -312,29 +248,6 @@ BEGIN
       GOTO error
     END
 
-    /* erwin Builtin Trigger */
-    /* E_1  E_1_E_2 on child delete no action */
-    /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="E_1"
-    CHILD_OWNER="", CHILD_TABLE="E_1_E_2"
-    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
-    FK_CONSTRAINT="R_1", FK_COLUMNS="One" */
-    IF EXISTS (SELECT * FROM deleted,E_1
-      WHERE
-        /* %JoinFKPK(deleted,E_1," = "," AND") */
-        deleted.One = E_1.One AND
-        NOT EXISTS (
-          SELECT * FROM E_1_E_2
-          WHERE
-            /* %JoinFKPK(E_1_E_2,E_1," = "," AND") */
-            E_1_E_2.One = E_1.One
-        )
-    )
-    BEGIN
-      SELECT @errno  = 30010,
-             @errmsg = 'Cannot delete last E_1_E_2 because E_1 exists.'
-      GOTO error
-    END
-
 
     /* erwin Builtin Trigger */
     RETURN
@@ -355,8 +268,8 @@ BEGIN
   DECLARE  @numrows int,
            @nullcnt int,
            @validcnt int,
-           @insOne CHAR, 
-           @instwo CHAR,
+           @insOne char(18), 
+           @instwo char(18),
            @errno   int,
            @severity int,
            @state    int,
@@ -365,7 +278,7 @@ BEGIN
   SELECT @numrows = @@rowcount
   /* erwin Builtin Trigger */
   /* E_2  E_1_E_2 on child update no action */
-  /* ERWIN_RELATION:CHECKSUM="0003a0d5", PARENT_OWNER="", PARENT_TABLE="E_2"
+  /* ERWIN_RELATION:CHECKSUM="00027216", PARENT_OWNER="", PARENT_TABLE="E_2"
     CHILD_OWNER="", CHILD_TABLE="E_1_E_2"
     P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
     FK_CONSTRAINT="R_3", FK_COLUMNS="two" */
@@ -415,32 +328,6 @@ BEGIN
     END
   END
 
-  /* erwin Builtin Trigger */
-  /* E_1  E_1_E_2 on child update no action */
-  /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="E_1"
-    CHILD_OWNER="", CHILD_TABLE="E_1_E_2"
-    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
-    FK_CONSTRAINT="R_1", FK_COLUMNS="One" */
-  IF
-    /* %ChildFK(" OR",UPDATE) */
-    UPDATE(One)
-  BEGIN
-    SELECT @nullcnt = 0
-    SELECT @validcnt = count(*)
-      FROM inserted,E_1
-        WHERE
-          /* %JoinFKPK(inserted,E_1) */
-          inserted.One = E_1.One
-    /* %NotnullFK(inserted," IS NULL","select @nullcnt = count(*) from inserted where"," AND") */
-    
-    IF @validcnt + @nullcnt != @numrows
-    BEGIN
-      SELECT @errno  = 30007,
-             @errmsg = 'Cannot update E_1_E_2 because E_1 does not exist.'
-      GOTO error
-    END
-  END
-
 
   /* erwin Builtin Trigger */
   RETURN
@@ -466,28 +353,10 @@ BEGIN
            @errmsg  varchar(255)
     /* erwin Builtin Trigger */
     /* E_2  E_2_E_4 on parent delete no action */
-    /* ERWIN_RELATION:CHECKSUM="0002aaeb", PARENT_OWNER="", PARENT_TABLE="E_2"
+    /* ERWIN_RELATION:CHECKSUM="0001cb95", PARENT_OWNER="", PARENT_TABLE="E_2"
     CHILD_OWNER="", CHILD_TABLE="E_2_E_4"
     P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
     FK_CONSTRAINT="R_5", FK_COLUMNS="two" */
-    IF EXISTS (
-      SELECT * FROM deleted,E_2_E_4
-      WHERE
-        /*  %JoinFKPK(E_2_E_4,deleted," = "," AND") */
-        E_2_E_4.two = deleted.two
-    )
-    BEGIN
-      SELECT @errno  = 30001,
-             @errmsg = 'Cannot delete E_2 because E_2_E_4 exists.'
-      GOTO error
-    END
-
-    /* erwin Builtin Trigger */
-    /* E_2  E_2_E_4 on parent delete no action */
-    /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="E_2"
-    CHILD_OWNER="", CHILD_TABLE="E_2_E_4"
-    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
-    FK_CONSTRAINT="R_4", FK_COLUMNS="two" */
     IF EXISTS (
       SELECT * FROM deleted,E_2_E_4
       WHERE
@@ -538,7 +407,7 @@ BEGIN
   DECLARE  @numrows int,
            @nullcnt int,
            @validcnt int,
-           @instwo CHAR,
+           @instwo char(18),
            @errno   int,
            @severity int,
            @state    int,
@@ -547,33 +416,10 @@ BEGIN
   SELECT @numrows = @@rowcount
   /* erwin Builtin Trigger */
   /* E_2  E_2_E_4 on parent update no action */
-  /* ERWIN_RELATION:CHECKSUM="0002e0a0", PARENT_OWNER="", PARENT_TABLE="E_2"
+  /* ERWIN_RELATION:CHECKSUM="0001fbfb", PARENT_OWNER="", PARENT_TABLE="E_2"
     CHILD_OWNER="", CHILD_TABLE="E_2_E_4"
     P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
     FK_CONSTRAINT="R_5", FK_COLUMNS="two" */
-  IF
-    /* %ParentPK(" OR",UPDATE) */
-    UPDATE(two)
-  BEGIN
-    IF EXISTS (
-      SELECT * FROM deleted,E_2_E_4
-      WHERE
-        /*  %JoinFKPK(E_2_E_4,deleted," = "," AND") */
-        E_2_E_4.two = deleted.two
-    )
-    BEGIN
-      SELECT @errno  = 30005,
-             @errmsg = 'Cannot update E_2 because E_2_E_4 exists.'
-      GOTO error
-    END
-  END
-
-  /* erwin Builtin Trigger */
-  /* E_2  E_2_E_4 on parent update no action */
-  /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="E_2"
-    CHILD_OWNER="", CHILD_TABLE="E_2_E_4"
-    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
-    FK_CONSTRAINT="R_4", FK_COLUMNS="two" */
   IF
     /* %ParentPK(" OR",UPDATE) */
     UPDATE(two)
@@ -639,7 +485,7 @@ BEGIN
            @errmsg  varchar(255)
     /* erwin Builtin Trigger */
     /* E_4  E_2_E_4 on child delete no action */
-    /* ERWIN_RELATION:CHECKSUM="00032434", PARENT_OWNER="", PARENT_TABLE="E_4"
+    /* ERWIN_RELATION:CHECKSUM="000229b6", PARENT_OWNER="", PARENT_TABLE="E_4"
     CHILD_OWNER="", CHILD_TABLE="E_2_E_4"
     P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
     FK_CONSTRAINT="R_6", FK_COLUMNS="four" */
@@ -683,29 +529,6 @@ BEGIN
       GOTO error
     END
 
-    /* erwin Builtin Trigger */
-    /* E_2  E_2_E_4 on child delete no action */
-    /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="E_2"
-    CHILD_OWNER="", CHILD_TABLE="E_2_E_4"
-    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
-    FK_CONSTRAINT="R_4", FK_COLUMNS="two" */
-    IF EXISTS (SELECT * FROM deleted,E_2
-      WHERE
-        /* %JoinFKPK(deleted,E_2," = "," AND") */
-        deleted.two = E_2.two AND
-        NOT EXISTS (
-          SELECT * FROM E_2_E_4
-          WHERE
-            /* %JoinFKPK(E_2_E_4,E_2," = "," AND") */
-            E_2_E_4.two = E_2.two
-        )
-    )
-    BEGIN
-      SELECT @errno  = 30010,
-             @errmsg = 'Cannot delete last E_2_E_4 because E_2 exists.'
-      GOTO error
-    END
-
 
     /* erwin Builtin Trigger */
     RETURN
@@ -726,8 +549,8 @@ BEGIN
   DECLARE  @numrows int,
            @nullcnt int,
            @validcnt int,
-           @instwo CHAR, 
-           @insfour CHAR,
+           @instwo char(18), 
+           @insfour char(18),
            @errno   int,
            @severity int,
            @state    int,
@@ -736,7 +559,7 @@ BEGIN
   SELECT @numrows = @@rowcount
   /* erwin Builtin Trigger */
   /* E_4  E_2_E_4 on child update no action */
-  /* ERWIN_RELATION:CHECKSUM="0003a242", PARENT_OWNER="", PARENT_TABLE="E_4"
+  /* ERWIN_RELATION:CHECKSUM="00026e6d", PARENT_OWNER="", PARENT_TABLE="E_4"
     CHILD_OWNER="", CHILD_TABLE="E_2_E_4"
     P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
     FK_CONSTRAINT="R_6", FK_COLUMNS="four" */
@@ -766,32 +589,6 @@ BEGIN
     CHILD_OWNER="", CHILD_TABLE="E_2_E_4"
     P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
     FK_CONSTRAINT="R_5", FK_COLUMNS="two" */
-  IF
-    /* %ChildFK(" OR",UPDATE) */
-    UPDATE(two)
-  BEGIN
-    SELECT @nullcnt = 0
-    SELECT @validcnt = count(*)
-      FROM inserted,E_2
-        WHERE
-          /* %JoinFKPK(inserted,E_2) */
-          inserted.two = E_2.two
-    /* %NotnullFK(inserted," IS NULL","select @nullcnt = count(*) from inserted where"," AND") */
-    
-    IF @validcnt + @nullcnt != @numrows
-    BEGIN
-      SELECT @errno  = 30007,
-             @errmsg = 'Cannot update E_2_E_4 because E_2 does not exist.'
-      GOTO error
-    END
-  END
-
-  /* erwin Builtin Trigger */
-  /* E_2  E_2_E_4 on child update no action */
-  /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="E_2"
-    CHILD_OWNER="", CHILD_TABLE="E_2_E_4"
-    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
-    FK_CONSTRAINT="R_4", FK_COLUMNS="two" */
   IF
     /* %ChildFK(" OR",UPDATE) */
     UPDATE(two)
@@ -878,7 +675,7 @@ BEGIN
   DECLARE  @numrows int,
            @nullcnt int,
            @validcnt int,
-           @insthree CHAR,
+           @insthree char(18),
            @errno   int,
            @severity int,
            @state    int,
@@ -991,7 +788,7 @@ BEGIN
   DECLARE  @numrows int,
            @nullcnt int,
            @validcnt int,
-           @insfour CHAR,
+           @insfour char(18),
            @errno   int,
            @severity int,
            @state    int,
