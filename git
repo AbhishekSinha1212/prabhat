@@ -1,10 +1,58 @@
+INSERT INTO `` (KEY, VALUE)
+	VALUES ("_7083940",
+{
+     "abc": "dictum sed porttitor ",
+     "doc_type__" : "E_1"
 
-CREATE TABLE [E_1]
-( 
-	[physical_only]      char(18)  NOT NULL 
-)
-go
+});
 
-ALTER TABLE [E_1]
-	ADD CONSTRAINT [XPKE_1] PRIMARY KEY  CLUSTERED ([physical_only] ASC)
-go
+INSERT INTO `` (KEY, VALUE)
+	VALUES ("_8788941",
+{
+     "doc_type__" : "E_2"
+
+});
+
+INSERT INTO `` (KEY, VALUE)
+	VALUES ("_9165872",
+{
+     "def": "orci ",
+     "doc_type__" : "E_3"
+
+});
+
+INSERT INTO `` (KEY, VALUE)
+	VALUES ("_8458003",
+{
+     "ghi": "at risus risus ",
+     "doc_type__" : "E_4"
+
+});
+
+INSERT INTO `` (KEY, VALUE)
+	VALUES ("_9897934",
+{
+     "doc_type__" : "E_1_E_2"
+
+});
+
+INSERT INTO `` (KEY, VALUE)
+	VALUES ("_4585375",
+{
+     "doc_type__" : "E_2_E_4"
+
+});
+
+INSERT INTO `` (KEY, VALUE)
+	VALUES ("_6614026",
+{
+     "doc_type__" : "E_1_E_3"
+
+});
+
+INSERT INTO `` (KEY, VALUE)
+	VALUES ("_2455147",
+{
+     "doc_type__" : "E_3_E_4"
+
+});
