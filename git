@@ -1,57 +1,57 @@
 INSERT INTO `` (KEY, VALUE)
-	VALUES ("_7083940",
+	VALUES ("_3962360",
 {
-     "abc": "dictum sed porttitor ",
+     "abc": "eget ",
      "doc_type__" : "E_1"
 
 });
 
 INSERT INTO `` (KEY, VALUE)
-	VALUES ("_8788941",
+	VALUES ("_6619161",
 {
      "doc_type__" : "E_2"
 
 });
 
 INSERT INTO `` (KEY, VALUE)
-	VALUES ("_9165872",
+	VALUES ("_1760282",
 {
-     "def": "orci ",
+     "def": "pellentesque vitae sollicitudin ",
      "doc_type__" : "E_3"
 
 });
 
 INSERT INTO `` (KEY, VALUE)
-	VALUES ("_8458003",
+	VALUES ("_9791403",
 {
-     "ghi": "at risus risus ",
+     "ghi": "porta curae sem ",
      "doc_type__" : "E_4"
 
 });
 
 INSERT INTO `` (KEY, VALUE)
-	VALUES ("_9897934",
+	VALUES ("_3096564",
 {
      "doc_type__" : "E_1_E_2"
 
 });
 
 INSERT INTO `` (KEY, VALUE)
-	VALUES ("_4585375",
+	VALUES ("_7409565",
 {
      "doc_type__" : "E_2_E_4"
 
 });
 
 INSERT INTO `` (KEY, VALUE)
-	VALUES ("_6614026",
+	VALUES ("_6368046",
 {
      "doc_type__" : "E_1_E_3"
 
 });
 
 INSERT INTO `` (KEY, VALUE)
-	VALUES ("_2455147",
+	VALUES ("_4938077",
 {
      "doc_type__" : "E_3_E_4"
 
