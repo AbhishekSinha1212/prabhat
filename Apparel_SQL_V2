@@ -1,0 +1,1137 @@
+
+CREATE TABLE [Apparel_Size]
+( 
+	[size_id]            char(18)  NOT NULL ,
+	[size_code]          char(18)  NULL ,
+	[sort_order]         char(18)  NULL ,
+	[Product_name]       char(18)  NOT NULL 
+)
+go
+
+ALTER TABLE [Apparel_Size]
+	ADD CONSTRAINT [XPKApparel_Size] PRIMARY KEY  CLUSTERED ([size_id] ASC,[Product_name] ASC)
+go
+
+CREATE TABLE [Categories]
+( 
+	[category_id]        char(18)  NOT NULL ,
+	[parent_category_id] char(18)  NULL ,
+	[category_name]      char(18)  NULL ,
+	[Product_name]       char(18)  NOT NULL ,
+	[size_id]            char(18)  NOT NULL 
+)
+go
+
+ALTER TABLE [Categories]
+	ADD CONSTRAINT [XPKCategories] PRIMARY KEY  CLUSTERED ([category_id] ASC,[Product_name] ASC,[size_id] ASC)
+go
+
+CREATE TABLE [Color]
+( 
+	[color_code]         char(18)  NULL ,
+	[color_name]         char(18)  NULL ,
+	[color_id]           char(18)  NOT NULL 
+)
+go
+
+ALTER TABLE [Color]
+	ADD CONSTRAINT [XPKColor] PRIMARY KEY  CLUSTERED ([color_id] ASC)
+go
+
+CREATE TABLE [Product]
+( 
+	[Product_name]       char(18)  NOT NULL ,
+	[product_id]         char(18)  NULL ,
+	[other_data]         char(18)  NULL 
+)
+go
+
+ALTER TABLE [Product]
+	ADD CONSTRAINT [XPKProduct] PRIMARY KEY  CLUSTERED ([Product_name] ASC)
+go
+
+CREATE TABLE [Product_Categories]
+( 
+	[category_id]        char(18)  NOT NULL ,
+	[Product_name]       char(18)  NOT NULL 
+)
+go
+
+ALTER TABLE [Product_Categories]
+	ADD CONSTRAINT [XPKProduct_Categories] PRIMARY KEY  CLUSTERED ([category_id] ASC,[Product_name] ASC)
+go
+
+CREATE TABLE [Product_Colors]
+( 
+	[color_id]           char(18)  NOT NULL 
+)
+go
+
+ALTER TABLE [Product_Colors]
+	ADD CONSTRAINT [XPKProduct_Colors] PRIMARY KEY  CLUSTERED ([color_id] ASC)
+go
+
+CREATE TABLE [Product_Product_Colors]
+( 
+	[Product_name]       char(18)  NOT NULL ,
+	[color_id]           char(18)  NOT NULL 
+)
+go
+
+ALTER TABLE [Product_Product_Colors]
+	ADD CONSTRAINT [XPKProduct_Product_Colors] PRIMARY KEY  CLUSTERED ([Product_name] ASC,[color_id] ASC)
+go
+
+CREATE VIEW [Apparel_View]([size_id],[sort_order])
+AS
+SELECT [Apparel_Size].[size_id],[Apparel_Size].[sort_order]
+	FROM [Apparel_Size]
+go
+
+
+ALTER TABLE [Apparel_Size]
+	ADD CONSTRAINT [R_5] FOREIGN KEY ([Product_name]) REFERENCES [Product]([Product_name])
+		ON DELETE NO ACTION
+		ON UPDATE NO ACTION
+go
+
+
+ALTER TABLE [Categories]
+	ADD CONSTRAINT [R_12] FOREIGN KEY ([category_id],[Product_name]) REFERENCES [Product_Categories]([category_id],[Product_name])
+		ON DELETE NO ACTION
+		ON UPDATE NO ACTION
+go
+
+ALTER TABLE [Categories]
+	ADD CONSTRAINT [App_Categories] FOREIGN KEY ([size_id],[Product_name]) REFERENCES [Apparel_Size]([size_id],[Product_name])
+		ON DELETE NO ACTION
+		ON UPDATE NO ACTION
+go
+
+
+ALTER TABLE [Color]
+	ADD CONSTRAINT [R_15] FOREIGN KEY ([color_id]) REFERENCES [Product_Colors]([color_id])
+		ON DELETE NO ACTION
+		ON UPDATE NO ACTION
+go
+
+
+ALTER TABLE [Product_Categories]
+	ADD CONSTRAINT [Product_to_Categories] FOREIGN KEY ([Product_name]) REFERENCES [Product]([Product_name])
+		ON DELETE NO ACTION
+		ON UPDATE NO ACTION
+go
+
+
+ALTER TABLE [Product_Product_Colors]
+	ADD CONSTRAINT [R_7] FOREIGN KEY ([Product_name]) REFERENCES [Product]([Product_name])
+		ON DELETE NO ACTION
+		ON UPDATE NO ACTION
+go
+
+ALTER TABLE [Product_Product_Colors]
+	ADD CONSTRAINT [R_8] FOREIGN KEY ([color_id]) REFERENCES [Product_Colors]([color_id])
+		ON DELETE NO ACTION
+		ON UPDATE NO ACTION
+go
+
+
+CREATE TRIGGER tD_Apparel_Size ON Apparel_Size FOR DELETE AS
+/* erwin Builtin Trigger */
+/* DELETE trigger on Apparel_Size */
+BEGIN
+  DECLARE  @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+    /* erwin Builtin Trigger */
+    /* Apparel_Size  Categories on parent delete no action */
+    /* ERWIN_RELATION:CHECKSUM="00027c14", PARENT_OWNER="", PARENT_TABLE="Apparel_Size"
+    CHILD_OWNER="", CHILD_TABLE="Categories"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="App_Categories", FK_COLUMNS="size_id""Product_name" */
+    IF EXISTS (
+      SELECT * FROM deleted,Categories
+      WHERE
+        /*  %JoinFKPK(Categories,deleted," = "," AND") */
+        Categories.size_id = deleted.size_id AND
+        Categories.Product_name = deleted.Product_name
+    )
+    BEGIN
+      SELECT @errno  = 30001,
+             @errmsg = 'Cannot delete Apparel_Size because Categories exists.'
+      GOTO error
+    END
+
+    /* erwin Builtin Trigger */
+    /* Product  Apparel_Size on child delete no action */
+    /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="Product"
+    CHILD_OWNER="", CHILD_TABLE="Apparel_Size"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_5", FK_COLUMNS="Product_name" */
+    IF EXISTS (SELECT * FROM deleted,Product
+      WHERE
+        /* %JoinFKPK(deleted,Product," = "," AND") */
+        deleted.Product_name = Product.Product_name AND
+        NOT EXISTS (
+          SELECT * FROM Apparel_Size
+          WHERE
+            /* %JoinFKPK(Apparel_Size,Product," = "," AND") */
+            Apparel_Size.Product_name = Product.Product_name
+        )
+    )
+    BEGIN
+      SELECT @errno  = 30010,
+             @errmsg = 'Cannot delete last Apparel_Size because Product exists.'
+      GOTO error
+    END
+
+
+    /* erwin Builtin Trigger */
+    RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
+CREATE TRIGGER tU_Apparel_Size ON Apparel_Size FOR UPDATE AS
+/* erwin Builtin Trigger */
+/* UPDATE trigger on Apparel_Size */
+BEGIN
+  DECLARE  @numrows int,
+           @nullcnt int,
+           @validcnt int,
+           @inssize_id char(18), 
+           @insProduct_name char(18),
+           @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+
+  SELECT @numrows = @@rowcount
+  /* erwin Builtin Trigger */
+  /* Apparel_Size  Categories on parent update no action */
+  /* ERWIN_RELATION:CHECKSUM="0002b21f", PARENT_OWNER="", PARENT_TABLE="Apparel_Size"
+    CHILD_OWNER="", CHILD_TABLE="Categories"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="App_Categories", FK_COLUMNS="size_id""Product_name" */
+  IF
+    /* %ParentPK(" OR",UPDATE) */
+    UPDATE(size_id) OR
+    UPDATE(Product_name)
+  BEGIN
+    IF EXISTS (
+      SELECT * FROM deleted,Categories
+      WHERE
+        /*  %JoinFKPK(Categories,deleted," = "," AND") */
+        Categories.size_id = deleted.size_id AND
+        Categories.Product_name = deleted.Product_name
+    )
+    BEGIN
+      SELECT @errno  = 30005,
+             @errmsg = 'Cannot update Apparel_Size because Categories exists.'
+      GOTO error
+    END
+  END
+
+  /* erwin Builtin Trigger */
+  /* Product  Apparel_Size on child update no action */
+  /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="Product"
+    CHILD_OWNER="", CHILD_TABLE="Apparel_Size"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_5", FK_COLUMNS="Product_name" */
+  IF
+    /* %ChildFK(" OR",UPDATE) */
+    UPDATE(Product_name)
+  BEGIN
+    SELECT @nullcnt = 0
+    SELECT @validcnt = count(*)
+      FROM inserted,Product
+        WHERE
+          /* %JoinFKPK(inserted,Product) */
+          inserted.Product_name = Product.Product_name
+    /* %NotnullFK(inserted," IS NULL","select @nullcnt = count(*) from inserted where"," AND") */
+    
+    IF @validcnt + @nullcnt != @numrows
+    BEGIN
+      SELECT @errno  = 30007,
+             @errmsg = 'Cannot update Apparel_Size because Product does not exist.'
+      GOTO error
+    END
+  END
+
+
+  /* erwin Builtin Trigger */
+  RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
+
+
+CREATE TRIGGER tD_Categories ON Categories FOR DELETE AS
+/* erwin Builtin Trigger */
+/* DELETE trigger on Categories */
+BEGIN
+  DECLARE  @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+    /* erwin Builtin Trigger */
+    /* Apparel_Size  Categories on child delete no action */
+    /* ERWIN_RELATION:CHECKSUM="00033ed2", PARENT_OWNER="", PARENT_TABLE="Apparel_Size"
+    CHILD_OWNER="", CHILD_TABLE="Categories"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="App_Categories", FK_COLUMNS="size_id""Product_name" */
+    IF EXISTS (SELECT * FROM deleted,Apparel_Size
+      WHERE
+        /* %JoinFKPK(deleted,Apparel_Size," = "," AND") */
+        deleted.size_id = Apparel_Size.size_id AND
+        deleted.Product_name = Apparel_Size.Product_name AND
+        NOT EXISTS (
+          SELECT * FROM Categories
+          WHERE
+            /* %JoinFKPK(Categories,Apparel_Size," = "," AND") */
+            Categories.size_id = Apparel_Size.size_id AND
+            Categories.Product_name = Apparel_Size.Product_name
+        )
+    )
+    BEGIN
+      SELECT @errno  = 30010,
+             @errmsg = 'Cannot delete last Categories because Apparel_Size exists.'
+      GOTO error
+    END
+
+    /* erwin Builtin Trigger */
+    /* Product_Categories  Categories on child delete no action */
+    /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="Product_Categories"
+    CHILD_OWNER="", CHILD_TABLE="Categories"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_12", FK_COLUMNS="category_id""Product_name" */
+    IF EXISTS (SELECT * FROM deleted,Product_Categories
+      WHERE
+        /* %JoinFKPK(deleted,Product_Categories," = "," AND") */
+        deleted.category_id = Product_Categories.category_id AND
+        deleted.Product_name = Product_Categories.Product_name AND
+        NOT EXISTS (
+          SELECT * FROM Categories
+          WHERE
+            /* %JoinFKPK(Categories,Product_Categories," = "," AND") */
+            Categories.category_id = Product_Categories.category_id AND
+            Categories.Product_name = Product_Categories.Product_name
+        )
+    )
+    BEGIN
+      SELECT @errno  = 30010,
+             @errmsg = 'Cannot delete last Categories because Product_Categories exists.'
+      GOTO error
+    END
+
+
+    /* erwin Builtin Trigger */
+    RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
+CREATE TRIGGER tU_Categories ON Categories FOR UPDATE AS
+/* erwin Builtin Trigger */
+/* UPDATE trigger on Categories */
+BEGIN
+  DECLARE  @numrows int,
+           @nullcnt int,
+           @validcnt int,
+           @inscategory_id char(18), 
+           @insProduct_name char(18), 
+           @inssize_id char(18),
+           @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+
+  SELECT @numrows = @@rowcount
+  /* erwin Builtin Trigger */
+  /* Apparel_Size  Categories on child update no action */
+  /* ERWIN_RELATION:CHECKSUM="00037b0a", PARENT_OWNER="", PARENT_TABLE="Apparel_Size"
+    CHILD_OWNER="", CHILD_TABLE="Categories"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="App_Categories", FK_COLUMNS="size_id""Product_name" */
+  IF
+    /* %ChildFK(" OR",UPDATE) */
+    UPDATE(size_id) OR
+    UPDATE(Product_name)
+  BEGIN
+    SELECT @nullcnt = 0
+    SELECT @validcnt = count(*)
+      FROM inserted,Apparel_Size
+        WHERE
+          /* %JoinFKPK(inserted,Apparel_Size) */
+          inserted.size_id = Apparel_Size.size_id and
+          inserted.Product_name = Apparel_Size.Product_name
+    /* %NotnullFK(inserted," IS NULL","select @nullcnt = count(*) from inserted where"," AND") */
+    
+    IF @validcnt + @nullcnt != @numrows
+    BEGIN
+      SELECT @errno  = 30007,
+             @errmsg = 'Cannot update Categories because Apparel_Size does not exist.'
+      GOTO error
+    END
+  END
+
+  /* erwin Builtin Trigger */
+  /* Product_Categories  Categories on child update no action */
+  /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="Product_Categories"
+    CHILD_OWNER="", CHILD_TABLE="Categories"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_12", FK_COLUMNS="category_id""Product_name" */
+  IF
+    /* %ChildFK(" OR",UPDATE) */
+    UPDATE(category_id) OR
+    UPDATE(Product_name)
+  BEGIN
+    SELECT @nullcnt = 0
+    SELECT @validcnt = count(*)
+      FROM inserted,Product_Categories
+        WHERE
+          /* %JoinFKPK(inserted,Product_Categories) */
+          inserted.category_id = Product_Categories.category_id and
+          inserted.Product_name = Product_Categories.Product_name
+    /* %NotnullFK(inserted," IS NULL","select @nullcnt = count(*) from inserted where"," AND") */
+    select @nullcnt = count(*) from inserted where
+      inserted.category_id IS NULL AND
+      inserted.Product_name IS NULL
+    IF @validcnt + @nullcnt != @numrows
+    BEGIN
+      SELECT @errno  = 30007,
+             @errmsg = 'Cannot update Categories because Product_Categories does not exist.'
+      GOTO error
+    END
+  END
+
+
+  /* erwin Builtin Trigger */
+  RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
+
+
+CREATE TRIGGER tD_Color ON Color FOR DELETE AS
+/* erwin Builtin Trigger */
+/* DELETE trigger on Color */
+BEGIN
+  DECLARE  @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+    /* erwin Builtin Trigger */
+    /* Product_Colors  Color on child delete no action */
+    /* ERWIN_RELATION:CHECKSUM="0001576a", PARENT_OWNER="", PARENT_TABLE="Product_Colors"
+    CHILD_OWNER="", CHILD_TABLE="Color"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_15", FK_COLUMNS="color_id" */
+    IF EXISTS (SELECT * FROM deleted,Product_Colors
+      WHERE
+        /* %JoinFKPK(deleted,Product_Colors," = "," AND") */
+        deleted.color_id = Product_Colors.color_id AND
+        NOT EXISTS (
+          SELECT * FROM Color
+          WHERE
+            /* %JoinFKPK(Color,Product_Colors," = "," AND") */
+            Color.color_id = Product_Colors.color_id
+        )
+    )
+    BEGIN
+      SELECT @errno  = 30010,
+             @errmsg = 'Cannot delete last Color because Product_Colors exists.'
+      GOTO error
+    END
+
+
+    /* erwin Builtin Trigger */
+    RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
+CREATE TRIGGER tU_Color ON Color FOR UPDATE AS
+/* erwin Builtin Trigger */
+/* UPDATE trigger on Color */
+BEGIN
+  DECLARE  @numrows int,
+           @nullcnt int,
+           @validcnt int,
+           @inscolor_id char(18),
+           @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+
+  SELECT @numrows = @@rowcount
+  /* erwin Builtin Trigger */
+  /* Product_Colors  Color on child update no action */
+  /* ERWIN_RELATION:CHECKSUM="00017549", PARENT_OWNER="", PARENT_TABLE="Product_Colors"
+    CHILD_OWNER="", CHILD_TABLE="Color"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_15", FK_COLUMNS="color_id" */
+  IF
+    /* %ChildFK(" OR",UPDATE) */
+    UPDATE(color_id)
+  BEGIN
+    SELECT @nullcnt = 0
+    SELECT @validcnt = count(*)
+      FROM inserted,Product_Colors
+        WHERE
+          /* %JoinFKPK(inserted,Product_Colors) */
+          inserted.color_id = Product_Colors.color_id
+    /* %NotnullFK(inserted," IS NULL","select @nullcnt = count(*) from inserted where"," AND") */
+    
+    IF @validcnt + @nullcnt != @numrows
+    BEGIN
+      SELECT @errno  = 30007,
+             @errmsg = 'Cannot update Color because Product_Colors does not exist.'
+      GOTO error
+    END
+  END
+
+
+  /* erwin Builtin Trigger */
+  RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
+
+
+CREATE TRIGGER tD_Product ON Product FOR DELETE AS
+/* erwin Builtin Trigger */
+/* DELETE trigger on Product */
+BEGIN
+  DECLARE  @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+    /* erwin Builtin Trigger */
+    /* Product  Product_Product_Colors on parent delete no action */
+    /* ERWIN_RELATION:CHECKSUM="00034467", PARENT_OWNER="", PARENT_TABLE="Product"
+    CHILD_OWNER="", CHILD_TABLE="Product_Product_Colors"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_7", FK_COLUMNS="Product_name" */
+    IF EXISTS (
+      SELECT * FROM deleted,Product_Product_Colors
+      WHERE
+        /*  %JoinFKPK(Product_Product_Colors,deleted," = "," AND") */
+        Product_Product_Colors.Product_name = deleted.Product_name
+    )
+    BEGIN
+      SELECT @errno  = 30001,
+             @errmsg = 'Cannot delete Product because Product_Product_Colors exists.'
+      GOTO error
+    END
+
+    /* erwin Builtin Trigger */
+    /* Product  Apparel_Size on parent delete no action */
+    /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="Product"
+    CHILD_OWNER="", CHILD_TABLE="Apparel_Size"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_5", FK_COLUMNS="Product_name" */
+    IF EXISTS (
+      SELECT * FROM deleted,Apparel_Size
+      WHERE
+        /*  %JoinFKPK(Apparel_Size,deleted," = "," AND") */
+        Apparel_Size.Product_name = deleted.Product_name
+    )
+    BEGIN
+      SELECT @errno  = 30001,
+             @errmsg = 'Cannot delete Product because Apparel_Size exists.'
+      GOTO error
+    END
+
+    /* erwin Builtin Trigger */
+    /* Product  Product_Categories on parent delete no action */
+    /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="Product"
+    CHILD_OWNER="", CHILD_TABLE="Product_Categories"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="Product_to_Categories", FK_COLUMNS="Product_name" */
+    IF EXISTS (
+      SELECT * FROM deleted,Product_Categories
+      WHERE
+        /*  %JoinFKPK(Product_Categories,deleted," = "," AND") */
+        Product_Categories.Product_name = deleted.Product_name
+    )
+    BEGIN
+      SELECT @errno  = 30001,
+             @errmsg = 'Cannot delete Product because Product_Categories exists.'
+      GOTO error
+    END
+
+
+    /* erwin Builtin Trigger */
+    RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
+CREATE TRIGGER tU_Product ON Product FOR UPDATE AS
+/* erwin Builtin Trigger */
+/* UPDATE trigger on Product */
+BEGIN
+  DECLARE  @numrows int,
+           @nullcnt int,
+           @validcnt int,
+           @insProduct_name char(18),
+           @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+
+  SELECT @numrows = @@rowcount
+  /* erwin Builtin Trigger */
+  /* Product  Product_Product_Colors on parent update no action */
+  /* ERWIN_RELATION:CHECKSUM="00039a6a", PARENT_OWNER="", PARENT_TABLE="Product"
+    CHILD_OWNER="", CHILD_TABLE="Product_Product_Colors"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_7", FK_COLUMNS="Product_name" */
+  IF
+    /* %ParentPK(" OR",UPDATE) */
+    UPDATE(Product_name)
+  BEGIN
+    IF EXISTS (
+      SELECT * FROM deleted,Product_Product_Colors
+      WHERE
+        /*  %JoinFKPK(Product_Product_Colors,deleted," = "," AND") */
+        Product_Product_Colors.Product_name = deleted.Product_name
+    )
+    BEGIN
+      SELECT @errno  = 30005,
+             @errmsg = 'Cannot update Product because Product_Product_Colors exists.'
+      GOTO error
+    END
+  END
+
+  /* erwin Builtin Trigger */
+  /* Product  Apparel_Size on parent update no action */
+  /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="Product"
+    CHILD_OWNER="", CHILD_TABLE="Apparel_Size"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_5", FK_COLUMNS="Product_name" */
+  IF
+    /* %ParentPK(" OR",UPDATE) */
+    UPDATE(Product_name)
+  BEGIN
+    IF EXISTS (
+      SELECT * FROM deleted,Apparel_Size
+      WHERE
+        /*  %JoinFKPK(Apparel_Size,deleted," = "," AND") */
+        Apparel_Size.Product_name = deleted.Product_name
+    )
+    BEGIN
+      SELECT @errno  = 30005,
+             @errmsg = 'Cannot update Product because Apparel_Size exists.'
+      GOTO error
+    END
+  END
+
+  /* erwin Builtin Trigger */
+  /* Product  Product_Categories on parent update no action */
+  /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="Product"
+    CHILD_OWNER="", CHILD_TABLE="Product_Categories"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="Product_to_Categories", FK_COLUMNS="Product_name" */
+  IF
+    /* %ParentPK(" OR",UPDATE) */
+    UPDATE(Product_name)
+  BEGIN
+    IF EXISTS (
+      SELECT * FROM deleted,Product_Categories
+      WHERE
+        /*  %JoinFKPK(Product_Categories,deleted," = "," AND") */
+        Product_Categories.Product_name = deleted.Product_name
+    )
+    BEGIN
+      SELECT @errno  = 30005,
+             @errmsg = 'Cannot update Product because Product_Categories exists.'
+      GOTO error
+    END
+  END
+
+
+  /* erwin Builtin Trigger */
+  RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
+
+
+CREATE TRIGGER tD_Product_Categories ON Product_Categories FOR DELETE AS
+/* erwin Builtin Trigger */
+/* DELETE trigger on Product_Categories */
+BEGIN
+  DECLARE  @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+    /* erwin Builtin Trigger */
+    /* Product_Categories  Categories on parent delete no action */
+    /* ERWIN_RELATION:CHECKSUM="0002830b", PARENT_OWNER="", PARENT_TABLE="Product_Categories"
+    CHILD_OWNER="", CHILD_TABLE="Categories"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_12", FK_COLUMNS="category_id""Product_name" */
+    IF EXISTS (
+      SELECT * FROM deleted,Categories
+      WHERE
+        /*  %JoinFKPK(Categories,deleted," = "," AND") */
+        Categories.category_id = deleted.category_id AND
+        Categories.Product_name = deleted.Product_name
+    )
+    BEGIN
+      SELECT @errno  = 30001,
+             @errmsg = 'Cannot delete Product_Categories because Categories exists.'
+      GOTO error
+    END
+
+    /* erwin Builtin Trigger */
+    /* Product  Product_Categories on child delete no action */
+    /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="Product"
+    CHILD_OWNER="", CHILD_TABLE="Product_Categories"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="Product_to_Categories", FK_COLUMNS="Product_name" */
+    IF EXISTS (SELECT * FROM deleted,Product
+      WHERE
+        /* %JoinFKPK(deleted,Product," = "," AND") */
+        deleted.Product_name = Product.Product_name AND
+        NOT EXISTS (
+          SELECT * FROM Product_Categories
+          WHERE
+            /* %JoinFKPK(Product_Categories,Product," = "," AND") */
+            Product_Categories.Product_name = Product.Product_name
+        )
+    )
+    BEGIN
+      SELECT @errno  = 30010,
+             @errmsg = 'Cannot delete last Product_Categories because Product exists.'
+      GOTO error
+    END
+
+
+    /* erwin Builtin Trigger */
+    RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
+CREATE TRIGGER tU_Product_Categories ON Product_Categories FOR UPDATE AS
+/* erwin Builtin Trigger */
+/* UPDATE trigger on Product_Categories */
+BEGIN
+  DECLARE  @numrows int,
+           @nullcnt int,
+           @validcnt int,
+           @inscategory_id char(18), 
+           @insProduct_name char(18),
+           @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+
+  SELECT @numrows = @@rowcount
+  /* erwin Builtin Trigger */
+  /* Product_Categories  Categories on parent update no action */
+  /* ERWIN_RELATION:CHECKSUM="0002bdd6", PARENT_OWNER="", PARENT_TABLE="Product_Categories"
+    CHILD_OWNER="", CHILD_TABLE="Categories"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_12", FK_COLUMNS="category_id""Product_name" */
+  IF
+    /* %ParentPK(" OR",UPDATE) */
+    UPDATE(category_id) OR
+    UPDATE(Product_name)
+  BEGIN
+    IF EXISTS (
+      SELECT * FROM deleted,Categories
+      WHERE
+        /*  %JoinFKPK(Categories,deleted," = "," AND") */
+        Categories.category_id = deleted.category_id AND
+        Categories.Product_name = deleted.Product_name
+    )
+    BEGIN
+      SELECT @errno  = 30005,
+             @errmsg = 'Cannot update Product_Categories because Categories exists.'
+      GOTO error
+    END
+  END
+
+  /* erwin Builtin Trigger */
+  /* Product  Product_Categories on child update no action */
+  /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="Product"
+    CHILD_OWNER="", CHILD_TABLE="Product_Categories"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="Product_to_Categories", FK_COLUMNS="Product_name" */
+  IF
+    /* %ChildFK(" OR",UPDATE) */
+    UPDATE(Product_name)
+  BEGIN
+    SELECT @nullcnt = 0
+    SELECT @validcnt = count(*)
+      FROM inserted,Product
+        WHERE
+          /* %JoinFKPK(inserted,Product) */
+          inserted.Product_name = Product.Product_name
+    /* %NotnullFK(inserted," IS NULL","select @nullcnt = count(*) from inserted where"," AND") */
+    
+    IF @validcnt + @nullcnt != @numrows
+    BEGIN
+      SELECT @errno  = 30007,
+             @errmsg = 'Cannot update Product_Categories because Product does not exist.'
+      GOTO error
+    END
+  END
+
+
+  /* erwin Builtin Trigger */
+  RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
+
+
+CREATE TRIGGER tD_Product_Colors ON Product_Colors FOR DELETE AS
+/* erwin Builtin Trigger */
+/* DELETE trigger on Product_Colors */
+BEGIN
+  DECLARE  @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+    /* erwin Builtin Trigger */
+    /* Product_Colors  Color on parent delete no action */
+    /* ERWIN_RELATION:CHECKSUM="00022db4", PARENT_OWNER="", PARENT_TABLE="Product_Colors"
+    CHILD_OWNER="", CHILD_TABLE="Color"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_15", FK_COLUMNS="color_id" */
+    IF EXISTS (
+      SELECT * FROM deleted,Color
+      WHERE
+        /*  %JoinFKPK(Color,deleted," = "," AND") */
+        Color.color_id = deleted.color_id
+    )
+    BEGIN
+      SELECT @errno  = 30001,
+             @errmsg = 'Cannot delete Product_Colors because Color exists.'
+      GOTO error
+    END
+
+    /* erwin Builtin Trigger */
+    /* Product_Colors  Product_Product_Colors on parent delete no action */
+    /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="Product_Colors"
+    CHILD_OWNER="", CHILD_TABLE="Product_Product_Colors"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_8", FK_COLUMNS="color_id" */
+    IF EXISTS (
+      SELECT * FROM deleted,Product_Product_Colors
+      WHERE
+        /*  %JoinFKPK(Product_Product_Colors,deleted," = "," AND") */
+        Product_Product_Colors.color_id = deleted.color_id
+    )
+    BEGIN
+      SELECT @errno  = 30001,
+             @errmsg = 'Cannot delete Product_Colors because Product_Product_Colors exists.'
+      GOTO error
+    END
+
+
+    /* erwin Builtin Trigger */
+    RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
+CREATE TRIGGER tU_Product_Colors ON Product_Colors FOR UPDATE AS
+/* erwin Builtin Trigger */
+/* UPDATE trigger on Product_Colors */
+BEGIN
+  DECLARE  @numrows int,
+           @nullcnt int,
+           @validcnt int,
+           @inscolor_id char(18),
+           @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+
+  SELECT @numrows = @@rowcount
+  /* erwin Builtin Trigger */
+  /* Product_Colors  Color on parent update no action */
+  /* ERWIN_RELATION:CHECKSUM="000253c2", PARENT_OWNER="", PARENT_TABLE="Product_Colors"
+    CHILD_OWNER="", CHILD_TABLE="Color"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_15", FK_COLUMNS="color_id" */
+  IF
+    /* %ParentPK(" OR",UPDATE) */
+    UPDATE(color_id)
+  BEGIN
+    IF EXISTS (
+      SELECT * FROM deleted,Color
+      WHERE
+        /*  %JoinFKPK(Color,deleted," = "," AND") */
+        Color.color_id = deleted.color_id
+    )
+    BEGIN
+      SELECT @errno  = 30005,
+             @errmsg = 'Cannot update Product_Colors because Color exists.'
+      GOTO error
+    END
+  END
+
+  /* erwin Builtin Trigger */
+  /* Product_Colors  Product_Product_Colors on parent update no action */
+  /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="Product_Colors"
+    CHILD_OWNER="", CHILD_TABLE="Product_Product_Colors"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_8", FK_COLUMNS="color_id" */
+  IF
+    /* %ParentPK(" OR",UPDATE) */
+    UPDATE(color_id)
+  BEGIN
+    IF EXISTS (
+      SELECT * FROM deleted,Product_Product_Colors
+      WHERE
+        /*  %JoinFKPK(Product_Product_Colors,deleted," = "," AND") */
+        Product_Product_Colors.color_id = deleted.color_id
+    )
+    BEGIN
+      SELECT @errno  = 30005,
+             @errmsg = 'Cannot update Product_Colors because Product_Product_Colors exists.'
+      GOTO error
+    END
+  END
+
+
+  /* erwin Builtin Trigger */
+  RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
+
+
+CREATE TRIGGER tD_Product_Product_Colors ON Product_Product_Colors FOR DELETE AS
+/* erwin Builtin Trigger */
+/* DELETE trigger on Product_Product_Colors */
+BEGIN
+  DECLARE  @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+    /* erwin Builtin Trigger */
+    /* Product_Colors  Product_Product_Colors on child delete no action */
+    /* ERWIN_RELATION:CHECKSUM="0002d799", PARENT_OWNER="", PARENT_TABLE="Product_Colors"
+    CHILD_OWNER="", CHILD_TABLE="Product_Product_Colors"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_8", FK_COLUMNS="color_id" */
+    IF EXISTS (SELECT * FROM deleted,Product_Colors
+      WHERE
+        /* %JoinFKPK(deleted,Product_Colors," = "," AND") */
+        deleted.color_id = Product_Colors.color_id AND
+        NOT EXISTS (
+          SELECT * FROM Product_Product_Colors
+          WHERE
+            /* %JoinFKPK(Product_Product_Colors,Product_Colors," = "," AND") */
+            Product_Product_Colors.color_id = Product_Colors.color_id
+        )
+    )
+    BEGIN
+      SELECT @errno  = 30010,
+             @errmsg = 'Cannot delete last Product_Product_Colors because Product_Colors exists.'
+      GOTO error
+    END
+
+    /* erwin Builtin Trigger */
+    /* Product  Product_Product_Colors on child delete no action */
+    /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="Product"
+    CHILD_OWNER="", CHILD_TABLE="Product_Product_Colors"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_7", FK_COLUMNS="Product_name" */
+    IF EXISTS (SELECT * FROM deleted,Product
+      WHERE
+        /* %JoinFKPK(deleted,Product," = "," AND") */
+        deleted.Product_name = Product.Product_name AND
+        NOT EXISTS (
+          SELECT * FROM Product_Product_Colors
+          WHERE
+            /* %JoinFKPK(Product_Product_Colors,Product," = "," AND") */
+            Product_Product_Colors.Product_name = Product.Product_name
+        )
+    )
+    BEGIN
+      SELECT @errno  = 30010,
+             @errmsg = 'Cannot delete last Product_Product_Colors because Product exists.'
+      GOTO error
+    END
+
+
+    /* erwin Builtin Trigger */
+    RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
+CREATE TRIGGER tU_Product_Product_Colors ON Product_Product_Colors FOR UPDATE AS
+/* erwin Builtin Trigger */
+/* UPDATE trigger on Product_Product_Colors */
+BEGIN
+  DECLARE  @numrows int,
+           @nullcnt int,
+           @validcnt int,
+           @insProduct_name char(18), 
+           @inscolor_id char(18),
+           @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+
+  SELECT @numrows = @@rowcount
+  /* erwin Builtin Trigger */
+  /* Product_Colors  Product_Product_Colors on child update no action */
+  /* ERWIN_RELATION:CHECKSUM="0002f447", PARENT_OWNER="", PARENT_TABLE="Product_Colors"
+    CHILD_OWNER="", CHILD_TABLE="Product_Product_Colors"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_8", FK_COLUMNS="color_id" */
+  IF
+    /* %ChildFK(" OR",UPDATE) */
+    UPDATE(color_id)
+  BEGIN
+    SELECT @nullcnt = 0
+    SELECT @validcnt = count(*)
+      FROM inserted,Product_Colors
+        WHERE
+          /* %JoinFKPK(inserted,Product_Colors) */
+          inserted.color_id = Product_Colors.color_id
+    /* %NotnullFK(inserted," IS NULL","select @nullcnt = count(*) from inserted where"," AND") */
+    
+    IF @validcnt + @nullcnt != @numrows
+    BEGIN
+      SELECT @errno  = 30007,
+             @errmsg = 'Cannot update Product_Product_Colors because Product_Colors does not exist.'
+      GOTO error
+    END
+  END
+
+  /* erwin Builtin Trigger */
+  /* Product  Product_Product_Colors on child update no action */
+  /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="Product"
+    CHILD_OWNER="", CHILD_TABLE="Product_Product_Colors"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_7", FK_COLUMNS="Product_name" */
+  IF
+    /* %ChildFK(" OR",UPDATE) */
+    UPDATE(Product_name)
+  BEGIN
+    SELECT @nullcnt = 0
+    SELECT @validcnt = count(*)
+      FROM inserted,Product
+        WHERE
+          /* %JoinFKPK(inserted,Product) */
+          inserted.Product_name = Product.Product_name
+    /* %NotnullFK(inserted," IS NULL","select @nullcnt = count(*) from inserted where"," AND") */
+    
+    IF @validcnt + @nullcnt != @numrows
+    BEGIN
+      SELECT @errno  = 30007,
+             @errmsg = 'Cannot update Product_Product_Colors because Product does not exist.'
+      GOTO error
+    END
+  END
+
+
+  /* erwin Builtin Trigger */
+  RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
