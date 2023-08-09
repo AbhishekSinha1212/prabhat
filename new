@@ -1,0 +1,156 @@
+
+CREATE TABLE E_2
+( 
+	post3_phy            char(18)  NOT NULL ,
+	post4                char(18)  NULL ,
+	post_physical        char(18)  NULL 
+);
+
+ALTER TABLE E_2
+	ADD CONSTRAINT XPKE_2 PRIMARY KEY (post3_phy);
+
+CREATE TABLE postgres_physical
+( 
+	post_physical        char(18)  NOT NULL ,
+	post2__phys          char(18)  NULL 
+);
+
+ALTER TABLE postgres_physical
+	ADD CONSTRAINT XPKpostgres_lp PRIMARY KEY (post_physical);
+
+
+ALTER TABLE E_2
+	ADD CONSTRAINT R_1 FOREIGN KEY (post_physical) REFERENCES postgres_physical(post_physical)
+		ON UPDATE SET NULL
+		ON DELETE SET NULL;
+
+
+CREATE OR REPLACE FUNCTION before_insert_I_E_2 () 
+RETURNS trigger AS
+$$
+
+RAISE EXCEPTION ;ECLARE NUMROWS INTEGER;
+BEGIN
+     * erwin Builtin Trigger * 
+     * postgres_physical  E_2 on child insert set null * 
+     * ERWIN_RELATION CHECKSUM="0000f6c8", PARENT_OWNER="", PARENT_TABLE="postgres_physical"
+    CHILD_OWNER="", CHILD_TABLE="E_2"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_1", FK_COLUMNS="post_physical" * 
+    UPDATE E_2
+      SET
+         * %SetFK(E_2,NULL) * 
+        E_2.post_physical = NULL
+      WHERE
+        NOT EXISTS (
+          SELECT * FROM postgres_physical
+            WHERE
+               * %JoinFKPK( %New,postgres_physical," = "," AND") * 
+               new.post_physical = postgres_physical.post_physical
+        ) 
+         * %JoinPKPK(E_2, %New," = "," AND") * 
+        E_2.post3_phy =  new.post3_phy;
+
+
+-- erwin Builtin Trigger
+END;
+ 
+$$
+LANGUAGE 'plpgsql';
+
+CREATE  TRIGGER tI_E_2 BEFORE INSERT ON public."E_2" for each row
+EXECUTE PROCEDURE before_insert_I_E_2 ();
+
+
+CREATE OR REPLACE FUNCTION aft_update_U_E_2() 
+RETURNS trigger AS
+$$
+
+RAISE EXCEPTION ;ECLARE NUMROWS INTEGER;
+BEGIN
+     * erwin Builtin Trigger * 
+     * postgres_physical  E_2 on child update set null * 
+     * ERWIN_RELATION CHECKSUM="00009181", PARENT_OWNER="", PARENT_TABLE="postgres_physical"
+    CHILD_OWNER="", CHILD_TABLE="E_2"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_1", FK_COLUMNS="post_physical" * 
+     * Not Implemented due to an ORA-04091 Mutating Table Issue * 
+    NULL;
+
+
+-- erwin Builtin Trigger
+END;
+ 
+$$
+LANGUAGE 'plpgsql';
+
+CREATE  TRIGGER tU_E_2 AFTER UPDATE ON public."E_2" for each row
+EXECUTE PROCEDURE aft_update_U_E_2();
+
+
+
+CREATE OR REPLACE FUNCTION aft_delete_tD_postgres_physical() 
+RETURNS trigger AS
+$$
+
+RAISE EXCEPTION ;ECLARE NUMROWS INTEGER;
+BEGIN
+     * erwin Builtin Trigger * 
+     * postgres_physical  E_2 on parent delete set null * 
+     * ERWIN_RELATION CHECKSUM="0000af44", PARENT_OWNER="", PARENT_TABLE="postgres_physical"
+    CHILD_OWNER="", CHILD_TABLE="E_2"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_1", FK_COLUMNS="post_physical" * 
+    UPDATE E_2
+      SET
+         * %SetFK(E_2,NULL) * 
+        E_2.post_physical = NULL
+      WHERE
+         * %JoinFKPK(E_2, %Old," = "," AND") * 
+        E_2.post_physical =  old.post_physical;
+
+
+-- erwin Builtin Trigger
+END;
+ 
+$$
+LANGUAGE 'plpgsql';
+
+CREATE  TRIGGER  tD_postgres_physical AFTER DELETE ON public."postgres_physical" for each row
+EXECUTE PROCEDURE aft_delete_tD_postgres_physical();
+
+
+CREATE OR REPLACE FUNCTION aft_update_U_postgres_physical() 
+RETURNS trigger AS
+$$
+
+RAISE EXCEPTION ;ECLARE NUMROWS INTEGER;
+BEGIN
+   * postgres_physical  E_2 on parent update set null * 
+   * ERWIN_RELATION CHECKSUM="0000da51", PARENT_OWNER="", PARENT_TABLE="postgres_physical"
+    CHILD_OWNER="", CHILD_TABLE="E_2"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_1", FK_COLUMNS="post_physical" * 
+  IF
+     * %JoinPKPK( %Old, %New," <> "," OR ") * 
+     old.post_physical <>  new.post_physical
+  THEN
+    UPDATE E_2
+      SET
+         * %SetFK(E_2,NULL) * 
+        E_2.post_physical = NULL
+      WHERE
+         * %JoinFKPK(E_2, %Old," = ",",") * 
+        E_2.post_physical =  old.post_physical;
+  END IF;
+
+
+-- erwin Builtin Trigger
+END;
+ 
+$$
+LANGUAGE 'plpgsql';
+
+CREATE  TRIGGER tU_postgres_physical AFTER UPDATE ON public."postgres_physical" for each row
+EXECUTE PROCEDURE aft_update_U_postgres_physical();
+
