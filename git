@@ -1,22 +1,40 @@
 
-CREATE TABLE ModelType
-(
-	Name                 CHAR(18) NOT NULL,
-	Version              CHAR(18) NULL
-);
+CREATE TABLE [E_1]
+( 
+	[hello]              char(18)  NOT NULL 
+)
+go
 
-ALTER TABLE ModelType
-ADD PRIMARY KEY (Name);
+ALTER TABLE [E_1]
+	ADD CONSTRAINT [XPKE_1] PRIMARY KEY  CLUSTERED ([hello] ASC)
+go
 
-CREATE TABLE PhysicalOnly
-(
-	TestA                CHAR(18) NOT NULL,
-	TestB                CHAR(18) NULL,
-	Name                 CHAR(18) NOT NULL
-);
+CREATE TABLE [E_4]
+( 
+	[increental]         char(18)  NOT NULL 
+)
+go
 
-ALTER TABLE PhysicalOnly
-ADD PRIMARY KEY (TestA,Name);
+ALTER TABLE [E_4]
+	ADD CONSTRAINT [XPKE_4] PRIMARY KEY  CLUSTERED ([increental] ASC)
+go
 
-ALTER TABLE PhysicalOnly
-ADD CONSTRAINT R_1 FOREIGN KEY (Name) REFERENCES ModelType (Name);
+CREATE TABLE [good_morning]
+( 
+	[today]              char(18)  NOT NULL 
+)
+go
+
+ALTER TABLE [good_morning]
+	ADD CONSTRAINT [XPKgood_morning] PRIMARY KEY  CLUSTERED ([today] ASC)
+go
+
+CREATE TABLE [WEEK]
+( 
+	[sunday]             char(18)  NOT NULL 
+)
+go
+
+ALTER TABLE [WEEK]
+	ADD CONSTRAINT [XPKWEEK] PRIMARY KEY  CLUSTERED ([sunday] ASC)
+go
