@@ -1,156 +1,151 @@
 
-CREATE TABLE E_2
-( 
-	post3_phy            char(18)  NOT NULL ,
-	post4                char(18)  NULL ,
-	post_physical        char(18)  NULL 
+CREATE TABLE Physical_Only
+(
+	Phy_A                CHAR(18)  NOT NULL ,
+	Phy_B                CHAR(18)  NULL ,
+	Phy_C                CHAR(18)  NULL 
 );
 
-ALTER TABLE E_2
-	ADD CONSTRAINT XPKE_2 PRIMARY KEY (post3_phy);
+CREATE UNIQUE INDEX XPKPhysical_Only ON Physical_Only
+(Phy_A   ASC);
 
-CREATE TABLE postgres_physical
-( 
-	post_physical        char(18)  NOT NULL ,
-	post2__phys          char(18)  NULL 
+ALTER TABLE Physical_Only
+	ADD CONSTRAINT  XPKPhysical_Only PRIMARY KEY (Phy_A);
+
+CREATE TABLE Physical2
+(
+	Phy_D_H              CHAR(18)  NOT NULL ,
+	Phy_E                CHAR(18)  NOT NULL ,
+	Phy_F                CHAR(18)  NULL ,
+	Phy_G                CHAR(18)  NULL ,
+	Phy_H                CHAR(18)  NULL ,
+	Phy_A                CHAR(18)  NULL 
 );
 
-ALTER TABLE postgres_physical
-	ADD CONSTRAINT XPKpostgres_lp PRIMARY KEY (post_physical);
+CREATE UNIQUE INDEX XPKPhysical2 ON Physical2
+(Phy_D_H   ASC,Phy_E   ASC);
 
+ALTER TABLE Physical2
+	ADD CONSTRAINT  XPKPhysical2 PRIMARY KEY (Phy_D_H,Phy_E);
 
-ALTER TABLE E_2
-	ADD CONSTRAINT R_1 FOREIGN KEY (post_physical) REFERENCES postgres_physical(post_physical)
-		ON UPDATE SET NULL
-		ON DELETE SET NULL;
+ALTER TABLE Physical2
+	ADD (
+CONSTRAINT R_1 FOREIGN KEY (Phy_A) REFERENCES Physical_Only (Phy_A) ON DELETE SET NULL);
 
-
-CREATE OR REPLACE FUNCTION before_insert_I_E_2 () 
-RETURNS trigger AS
-$$
-
-RAISE EXCEPTION ;ECLARE NUMROWS INTEGER;
+CREATE  TRIGGER  tD_Physical_Only AFTER DELETE ON Physical_Only for each row
+-- erwin Builtin Trigger
+-- DELETE trigger on Physical_Only 
+DECLARE NUMROWS INTEGER;
 BEGIN
-     * erwin Builtin Trigger * 
-     * postgres_physical  E_2 on child insert set null * 
-     * ERWIN_RELATION CHECKSUM="0000f6c8", PARENT_OWNER="", PARENT_TABLE="postgres_physical"
-    CHILD_OWNER="", CHILD_TABLE="E_2"
+    /* erwin Builtin Trigger */
+    /* Physical_Only  Physical2 on parent delete set null */
+    /* ERWIN_RELATION:CHECKSUM="0000b397", PARENT_OWNER="", PARENT_TABLE="Physical_Only"
+    CHILD_OWNER="", CHILD_TABLE="Physical2"
     P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
-    FK_CONSTRAINT="R_1", FK_COLUMNS="post_physical" * 
-    UPDATE E_2
+    FK_CONSTRAINT="R_1", FK_COLUMNS="Phy_A" */
+    UPDATE Physical2
       SET
-         * %SetFK(E_2,NULL) * 
-        E_2.post_physical = NULL
+        /* %SetFK(Physical2,NULL) */
+        Physical2.Phy_A = NULL
       WHERE
-        NOT EXISTS (
-          SELECT * FROM postgres_physical
-            WHERE
-               * %JoinFKPK( %New,postgres_physical," = "," AND") * 
-               new.post_physical = postgres_physical.post_physical
-        ) 
-         * %JoinPKPK(E_2, %New," = "," AND") * 
-        E_2.post3_phy =  new.post3_phy;
+        /* %JoinFKPK(Physical2,:%Old," = "," AND") */
+        Physical2.Phy_A = :old.Phy_A;
 
 
 -- erwin Builtin Trigger
 END;
- 
-$$
-LANGUAGE 'plpgsql';
+/
 
-CREATE  TRIGGER tI_E_2 BEFORE INSERT ON public."E_2" for each row
-EXECUTE PROCEDURE before_insert_I_E_2 ();
-
-
-CREATE OR REPLACE FUNCTION aft_update_U_E_2() 
-RETURNS trigger AS
-$$
-
-RAISE EXCEPTION ;ECLARE NUMROWS INTEGER;
-BEGIN
-     * erwin Builtin Trigger * 
-     * postgres_physical  E_2 on child update set null * 
-     * ERWIN_RELATION CHECKSUM="00009181", PARENT_OWNER="", PARENT_TABLE="postgres_physical"
-    CHILD_OWNER="", CHILD_TABLE="E_2"
-    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
-    FK_CONSTRAINT="R_1", FK_COLUMNS="post_physical" * 
-     * Not Implemented due to an ORA-04091 Mutating Table Issue * 
-    NULL;
-
-
+CREATE  TRIGGER tU_Physical_Only AFTER UPDATE ON Physical_Only for each row
 -- erwin Builtin Trigger
-END;
- 
-$$
-LANGUAGE 'plpgsql';
-
-CREATE  TRIGGER tU_E_2 AFTER UPDATE ON public."E_2" for each row
-EXECUTE PROCEDURE aft_update_U_E_2();
-
-
-
-CREATE OR REPLACE FUNCTION aft_delete_tD_postgres_physical() 
-RETURNS trigger AS
-$$
-
-RAISE EXCEPTION ;ECLARE NUMROWS INTEGER;
+-- UPDATE trigger on Physical_Only 
+DECLARE NUMROWS INTEGER;
 BEGIN
-     * erwin Builtin Trigger * 
-     * postgres_physical  E_2 on parent delete set null * 
-     * ERWIN_RELATION CHECKSUM="0000af44", PARENT_OWNER="", PARENT_TABLE="postgres_physical"
-    CHILD_OWNER="", CHILD_TABLE="E_2"
+  /* Physical_Only  Physical2 on parent update set null */
+  /* ERWIN_RELATION:CHECKSUM="0000d81c", PARENT_OWNER="", PARENT_TABLE="Physical_Only"
+    CHILD_OWNER="", CHILD_TABLE="Physical2"
     P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
-    FK_CONSTRAINT="R_1", FK_COLUMNS="post_physical" * 
-    UPDATE E_2
-      SET
-         * %SetFK(E_2,NULL) * 
-        E_2.post_physical = NULL
-      WHERE
-         * %JoinFKPK(E_2, %Old," = "," AND") * 
-        E_2.post_physical =  old.post_physical;
-
-
--- erwin Builtin Trigger
-END;
- 
-$$
-LANGUAGE 'plpgsql';
-
-CREATE  TRIGGER  tD_postgres_physical AFTER DELETE ON public."postgres_physical" for each row
-EXECUTE PROCEDURE aft_delete_tD_postgres_physical();
-
-
-CREATE OR REPLACE FUNCTION aft_update_U_postgres_physical() 
-RETURNS trigger AS
-$$
-
-RAISE EXCEPTION ;ECLARE NUMROWS INTEGER;
-BEGIN
-   * postgres_physical  E_2 on parent update set null * 
-   * ERWIN_RELATION CHECKSUM="0000da51", PARENT_OWNER="", PARENT_TABLE="postgres_physical"
-    CHILD_OWNER="", CHILD_TABLE="E_2"
-    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
-    FK_CONSTRAINT="R_1", FK_COLUMNS="post_physical" * 
+    FK_CONSTRAINT="R_1", FK_COLUMNS="Phy_A" */
   IF
-     * %JoinPKPK( %Old, %New," <> "," OR ") * 
-     old.post_physical <>  new.post_physical
+    /* %JoinPKPK(:%Old,:%New," <> "," OR ") */
+    :old.Phy_A <> :new.Phy_A
   THEN
-    UPDATE E_2
+    UPDATE Physical2
       SET
-         * %SetFK(E_2,NULL) * 
-        E_2.post_physical = NULL
+        /* %SetFK(Physical2,NULL) */
+        Physical2.Phy_A = NULL
       WHERE
-         * %JoinFKPK(E_2, %Old," = ",",") * 
-        E_2.post_physical =  old.post_physical;
+        /* %JoinFKPK(Physical2,:%Old," = ",",") */
+        Physical2.Phy_A = :old.Phy_A;
   END IF;
 
 
 -- erwin Builtin Trigger
 END;
- 
-$$
-LANGUAGE 'plpgsql';
+/
 
-CREATE  TRIGGER tU_postgres_physical AFTER UPDATE ON public."postgres_physical" for each row
-EXECUTE PROCEDURE aft_update_U_postgres_physical();
+
+CREATE  TRIGGER tI_Physical2 BEFORE INSERT ON Physical2 for each row
+-- erwin Builtin Trigger
+-- INSERT trigger on Physical2 
+DECLARE NUMROWS INTEGER;
+BEGIN
+    /* erwin Builtin Trigger */
+    /* Physical_Only  Physical2 on child insert set null */
+    /* ERWIN_RELATION:CHECKSUM="000103b5", PARENT_OWNER="", PARENT_TABLE="Physical_Only"
+    CHILD_OWNER="", CHILD_TABLE="Physical2"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_1", FK_COLUMNS="Phy_A" */
+    UPDATE Physical2
+      SET
+        /* %SetFK(Physical2,NULL) */
+        Physical2.Phy_A = NULL
+      WHERE
+        NOT EXISTS (
+          SELECT * FROM Physical_Only
+            WHERE
+              /* %JoinFKPK(:%New,Physical_Only," = "," AND") */
+              :new.Phy_A = Physical_Only.Phy_A
+        ) 
+        /* %JoinPKPK(Physical2,:%New," = "," AND") */
+         and Physical2.Phy_D_H = :new.Phy_D_H AND
+        Physical2.Phy_E = :new.Phy_E;
+
+
+-- erwin Builtin Trigger
+END;
+/
+
+CREATE  TRIGGER tU_Physical2 AFTER UPDATE ON Physical2 for each row
+-- erwin Builtin Trigger
+-- UPDATE trigger on Physical2 
+DECLARE NUMROWS INTEGER;
+BEGIN
+  /* erwin Builtin Trigger */
+  /* Physical_Only  Physical2 on child update no action */
+  /* ERWIN_RELATION:CHECKSUM="0001000e", PARENT_OWNER="", PARENT_TABLE="Physical_Only"
+    CHILD_OWNER="", CHILD_TABLE="Physical2"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_1", FK_COLUMNS="Phy_A" */
+  SELECT count(*) INTO NUMROWS
+    FROM Physical_Only
+    WHERE
+      /* %JoinFKPK(:%New,Physical_Only," = "," AND") */
+      :new.Phy_A = Physical_Only.Phy_A;
+  IF (
+    /* %NotnullFK(:%New," IS NOT NULL AND") */
+    :new.Phy_A IS NOT NULL AND
+    NUMROWS = 0
+  )
+  THEN
+    raise_application_error(
+      -20007,
+      'Cannot update Physical2 because Physical_Only does not exist.'
+    );
+  END IF;
+
+
+-- erwin Builtin Trigger
+END;
+/
 
