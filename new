@@ -15,11 +15,11 @@ ALTER TABLE Physical_Only
 CREATE TABLE Physical2
 (
 	Phy_D_H              CHAR(18)  NOT NULL ,
-	Phy_E                CHAR(18)  NOT NULL ,
 	Phy_F                CHAR(18)  NULL ,
 	Phy_G                CHAR(18)  NULL ,
 	Phy_H                CHAR(18)  NULL ,
-	Phy_A                CHAR(18)  NULL 
+	Phy_A                CHAR(18)  NULL ,
+	Phy_E                CHAR(18)  NOT NULL 
 );
 
 CREATE UNIQUE INDEX XPKPhysical2 ON Physical2
