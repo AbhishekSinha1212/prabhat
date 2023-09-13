@@ -1,0 +1,44 @@
+
+CREATE TABLE E_1
+(
+ a                     CHAR(18)  NOT NULL ,
+ new                   CHAR(18)  
+);
+
+LABEL ON COLUMN E_1.a IS 'a';
+
+LABEL ON COLUMN E_1.a TEXT IS 'a:';
+
+LABEL ON COLUMN E_1.new IS 'aqq';
+
+LABEL ON COLUMN E_1.new TEXT IS 'aqq:';
+
+ALTER TABLE E_1
+ ADD CONSTRAINT XPKE_1 PRIMARY KEY (a);
+
+CREATE TABLE E_2
+(
+ fdf                   CHAR(18)  NOT NULL ,
+ dfd                   CHAR(18)  ,
+ a                     CHAR(18)  NOT NULL 
+);
+
+LABEL ON COLUMN E_2.fdf IS 'fdf';
+
+LABEL ON COLUMN E_2.fdf TEXT IS 'fdf:';
+
+LABEL ON COLUMN E_2.dfd IS 'dfd';
+
+LABEL ON COLUMN E_2.dfd TEXT IS 'dfd:';
+
+LABEL ON COLUMN E_2.a IS 'a';
+
+LABEL ON COLUMN E_2.a TEXT IS 'a:';
+
+ALTER TABLE E_2
+ ADD CONSTRAINT XPKE_2 PRIMARY KEY (fdf, a);
+
+ALTER TABLE E_2
+ ADD CONSTRAINT R_1 FOREIGN KEY (a) REFERENCES E_1 (a)
+  ON DELETE RESTRICT
+  ON UPDATE RESTRICT;
