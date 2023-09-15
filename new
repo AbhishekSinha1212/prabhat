@@ -1,126 +1,217 @@
 
-CREATE TABLE CUSTOMER
-(
-	customer_address TEXT,
-	customer_city TEXT,
-	customer_first_name TEXT,
-	customer_last_name TEXT,
-	customer_state TEXT,
-	customer_zip_code INT,
-	email TEXT,
-	customer_number INT,
-	PRIMARY KEY((customer_number))
-);
+CREATE TABLE [E_1]
+( 
+	[new]                char(18)  NOT NULL 
+)
+go
 
-CREATE TABLE CUSTOMER_CREDIT
-(
-	credit_card INT,
-	credit_card_exp INT,
-	status_code TEXT,
-	customer_number INT,
-	PRIMARY KEY((customer_number))
-);
+ALTER TABLE [E_1]
+	ADD CONSTRAINT [XPKE_1] PRIMARY KEY  CLUSTERED ([new] ASC)
+go
 
-CREATE TABLE EMPLOYEE
-(
-	employee_first_name TEXT,
-	employee_address TEXT,
-	employee_phone INT,
-	store_number INT,
-	employee_address_2 TEXT,
-	email TEXT,
-	salary INT,
-	hire_date DATE,
-	soc_sec_number INT,
-	employee_number TEXT,
-	supervisor TEXT,
-	PRIMARY KEY((employee_number))
-);
+CREATE TABLE [E_2]
+( 
+	[new]                char(18)  NOT NULL 
+)
+go
 
-CREATE TABLE MOVIE
-(
-	movie_title TEXT,
-	movie_director TEXT,
-	description TEXT,
-	star_1_name TEXT,
-	rating TEXT,
-	star_2_name TEXT,
-	movie_number INT,
-	genre TEXT,
-	rental_rate DECIMAL,
-	movie_url TEXT,
-	movie_clip BLOB,
-	PRIMARY KEY((movie_number))
-);
+ALTER TABLE [E_2]
+	ADD CONSTRAINT [XPKE_2] PRIMARY KEY  CLUSTERED ([new] ASC)
+go
 
-CREATE TABLE MOVIE_COPY
-(
-	general_condition TEXT,
-	movie_format TEXT,
-	movie_copy_number INT,
-	movie_number INT,
-	PRIMARY KEY((movie_copy_number,movie_number))
-);
 
-CREATE TABLE MOVIE_RENTAL_RECORD
-(
-	rental_date DATE,
-	due_date DATE,
-	rental_status TEXT,
-	payment_transaction_number INT,
-	overdue_charge INT,
-	rental_rate INT,
-	employee_phone INT,
-	soc_sec_number INT,
-	rental_record_date DATE,
-	movie_copy_number INT,
-	movie_number INT,
-	customer_number INT,
-	PRIMARY KEY((rental_record_date,soc_sec_number,employee_phone,movie_copy_number,movie_number,customer_number,customer_number))
-);
+ALTER TABLE [E_2]
+	ADD CONSTRAINT [R_1] FOREIGN KEY ([new]) REFERENCES [E_1]([new])
+		ON DELETE NO ACTION
+		ON UPDATE NO ACTION
+go
 
-CREATE TABLE MOVIE_STORE
-(
-	movie_number INT,
-	store_number INT,
-	PRIMARY KEY((movie_number,store_number))
-);
 
-CREATE TABLE PAYMENT
-(
-	payment_transaction_number INT,
-	payment_type TEXT,
-	payment_amount DECIMAL,
-	payment_date DATE,
-	payment_status TEXT,
-	employee_number TEXT,
-	customer_number INT,
-	customer_no INT,
-	check_bank_number INT,
-	check_number INT,
-	epay_vendor_number INT,
-	epay_account_number INT,
-	credit_card_number TEXT,
-	credit_card_exp TIMESTAMP,
-	credit_card_type TEXT,
-	PRIMARY KEY((payment_transaction_number))
-);
+CREATE TRIGGER tD_E_1 ON E_1 FOR DELETE AS
+/* erwin Builtin Trigger */
+/* DELETE trigger on E_1 */
+BEGIN
+  DECLARE  @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+    /* erwin Builtin Trigger */
+    /* E_1  E_2 on parent delete no action */
+    /* ERWIN_RELATION:CHECKSUM="0000ecf2", PARENT_OWNER="", PARENT_TABLE="E_1"
+    CHILD_OWNER="", CHILD_TABLE="E_2"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_1", FK_COLUMNS="new" */
+    IF EXISTS (
+      SELECT * FROM deleted,E_2
+      WHERE
+        /*  %JoinFKPK(E_2,deleted," = "," AND") */
+        E_2.new = deleted.new
+    )
+    BEGIN
+      SELECT @errno  = 30001,
+             @errmsg = 'Cannot delete E_1 because E_2 exists.'
+      GOTO error
+    END
 
-CREATE TABLE STORE
-(
-	store_manager TEXT,
-	store_address TEXT,
-	store_address_2 TEXT,
-	store_phone INT,
-	store_city TEXT,
-	store_state TEXT,
-	store_zip_code INT,
-	store_number INT,
-	PRIMARY KEY((store_number))
-);
 
-CREATE INDEX XIE1CUSTOMER ON CUSTOMER ( customer_last_name );
+    /* erwin Builtin Trigger */
+    RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
 
-CREATE INDEX XIE1EMPLOYEE ON EMPLOYEE ( employee_first_name );
+go
 
-CREATE INDEX XIE1STORE ON STORE ( store_manager );
+
+CREATE TRIGGER tU_E_1 ON E_1 FOR UPDATE AS
+/* erwin Builtin Trigger */
+/* UPDATE trigger on E_1 */
+BEGIN
+  DECLARE  @numrows int,
+           @nullcnt int,
+           @validcnt int,
+           @insnew char(18),
+           @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+
+  SELECT @numrows = @@rowcount
+  /* erwin Builtin Trigger */
+  /* E_1  E_2 on parent update no action */
+  /* ERWIN_RELATION:CHECKSUM="00010cc3", PARENT_OWNER="", PARENT_TABLE="E_1"
+    CHILD_OWNER="", CHILD_TABLE="E_2"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_1", FK_COLUMNS="new" */
+  IF
+    /* %ParentPK(" OR",UPDATE) */
+    UPDATE(new)
+  BEGIN
+    IF EXISTS (
+      SELECT * FROM deleted,E_2
+      WHERE
+        /*  %JoinFKPK(E_2,deleted," = "," AND") */
+        E_2.new = deleted.new
+    )
+    BEGIN
+      SELECT @errno  = 30005,
+             @errmsg = 'Cannot update E_1 because E_2 exists.'
+      GOTO error
+    END
+  END
+
+
+  /* erwin Builtin Trigger */
+  RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
+
+
+CREATE TRIGGER tD_E_2 ON E_2 FOR DELETE AS
+/* erwin Builtin Trigger */
+/* DELETE trigger on E_2 */
+BEGIN
+  DECLARE  @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+    /* erwin Builtin Trigger */
+    /* E_1  E_2 on child delete no action */
+    /* ERWIN_RELATION:CHECKSUM="0001265e", PARENT_OWNER="", PARENT_TABLE="E_1"
+    CHILD_OWNER="", CHILD_TABLE="E_2"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_1", FK_COLUMNS="new" */
+    IF EXISTS (SELECT * FROM deleted,E_1
+      WHERE
+        /* %JoinFKPK(deleted,E_1," = "," AND") */
+        deleted.new = E_1.new AND
+        NOT EXISTS (
+          SELECT * FROM E_2
+          WHERE
+            /* %JoinFKPK(E_2,E_1," = "," AND") */
+            E_2.new = E_1.new
+        )
+    )
+    BEGIN
+      SELECT @errno  = 30010,
+             @errmsg = 'Cannot delete last E_2 because E_1 exists.'
+      GOTO error
+    END
+
+
+    /* erwin Builtin Trigger */
+    RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
+CREATE TRIGGER tU_E_2 ON E_2 FOR UPDATE AS
+/* erwin Builtin Trigger */
+/* UPDATE trigger on E_2 */
+BEGIN
+  DECLARE  @numrows int,
+           @nullcnt int,
+           @validcnt int,
+           @insnew char(18),
+           @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+
+  SELECT @numrows = @@rowcount
+  /* erwin Builtin Trigger */
+  /* E_1  E_2 on child update no action */
+  /* ERWIN_RELATION:CHECKSUM="00015417", PARENT_OWNER="", PARENT_TABLE="E_1"
+    CHILD_OWNER="", CHILD_TABLE="E_2"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_1", FK_COLUMNS="new" */
+  IF
+    /* %ChildFK(" OR",UPDATE) */
+    UPDATE(new)
+  BEGIN
+    SELECT @nullcnt = 0
+    SELECT @validcnt = count(*)
+      FROM inserted,E_1
+        WHERE
+          /* %JoinFKPK(inserted,E_1) */
+          inserted.new = E_1.new
+    /* %NotnullFK(inserted," IS NULL","select @nullcnt = count(*) from inserted where"," AND") */
+    
+    IF @validcnt + @nullcnt != @numrows
+    BEGIN
+      SELECT @errno  = 30007,
+             @errmsg = 'Cannot update E_2 because E_1 does not exist.'
+      GOTO error
+    END
+  END
+
+
+  /* erwin Builtin Trigger */
+  RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
