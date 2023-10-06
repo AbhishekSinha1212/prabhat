@@ -33,6 +33,17 @@ ALTER TABLE [E_3]
 	ADD CONSTRAINT [XPKE_3] PRIMARY KEY  CLUSTERED ([sam] ASC)
 go
 
+CREATE TABLE [E_5]
+( 
+	[fd]                 char(18)  NOT NULL ,
+	[dfd]                char(18)  NULL 
+)
+go
+
+ALTER TABLE [E_5]
+	ADD CONSTRAINT [XPKE_5] PRIMARY KEY  CLUSTERED ([fd] ASC)
+go
+
 CREATE TABLE [fa]
 ( 
 	[fdfsa]              char(18)  NOT NULL 
