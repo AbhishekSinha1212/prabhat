@@ -1,0 +1,31 @@
+
+CREATE TABLE [E_1]
+( 
+	[prabhat]            char(18)  NOT NULL ,
+	[SFKSJF]             char(18)  NULL 
+)
+go
+
+ALTER TABLE [E_1]
+	ADD CONSTRAINT [XPKE_1] PRIMARY KEY  CLUSTERED ([prabhat] ASC)
+go
+
+CREATE TABLE [E_4]
+( 
+	[hllo]               char(18)  NOT NULL 
+)
+go
+
+ALTER TABLE [E_4]
+	ADD CONSTRAINT [XPKE_4] PRIMARY KEY  CLUSTERED ([hllo] ASC)
+go
+
+CREATE TABLE [E_5]
+( 
+	[FIVE]               char(18)  NOT NULL 
+)
+go
+
+ALTER TABLE [E_5]
+	ADD CONSTRAINT [XPKE_5] PRIMARY KEY  CLUSTERED ([FIVE] ASC)
+go
