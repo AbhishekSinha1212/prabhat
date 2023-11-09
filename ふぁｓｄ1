@@ -1,0 +1,24 @@
+
+CREATE TABLE E_2
+(
+	ベアブリッ           CHAR(18)  NOT NULL ,
+	こぉうれ             CHAR(18)  NULL 
+);
+
+CREATE UNIQUE INDEX XPKE_2 ON E_2
+(ベアブリッ   ASC);
+
+ALTER TABLE E_2
+	ADD CONSTRAINT  XPKE_2 PRIMARY KEY (ベアブリッ);
+
+CREATE TABLE 手数料
+(
+	デモンストレーション CHAR(18)  NOT NULL ,
+	社hるkかｈな         CHAR(18)  NULL 
+);
+
+CREATE UNIQUE INDEX XPK手数料 ON 手数料
+(デモンストレーション   ASC);
+
+ALTER TABLE 手数料
+	ADD CONSTRAINT  XPK手数料 PRIMARY KEY (デモンストレーション);
