@@ -1,0 +1,221 @@
+
+CREATE TABLE [タワーレジデンス]
+( 
+	[テンプレート]       char(18)  NOT NULL ,
+	[でも]               char(18)  NULL 
+)
+go
+
+ALTER TABLE [タワーレジデンス]
+	ADD CONSTRAINT [XPKタワーレジデンス] PRIMARY KEY  CLUSTERED ([テンプレート] ASC)
+go
+
+CREATE TABLE [ベトナム]
+( 
+	[コメリ]             char(18)  NOT NULL ,
+	[ござい]             char(18)  NULL ,
+	[テンプレート]       char(18)  NOT NULL 
+)
+go
+
+ALTER TABLE [ベトナム]
+	ADD CONSTRAINT [XPKベトナム] PRIMARY KEY  CLUSTERED ([コメリ] ASC,[テンプレート] ASC)
+go
+
+
+ALTER TABLE [ベトナム]
+	ADD CONSTRAINT [R_1] FOREIGN KEY ([テンプレート]) REFERENCES [タワーレジデンス]([テンプレート])
+		ON DELETE NO ACTION
+		ON UPDATE NO ACTION
+go
+
+
+CREATE TRIGGER tD_タワーレジデンス ON タワーレジデンス FOR DELETE AS
+/* erwin Builtin Trigger */
+/* DELETE trigger on タワーレジデンス */
+BEGIN
+  DECLARE  @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+    /* erwin Builtin Trigger */
+    /* タワーレジデンス  ベトナム on parent delete no action */
+    /* ERWIN_RELATION:CHECKSUM="00011004", PARENT_OWNER="", PARENT_TABLE="タワーレジデンス"
+    CHILD_OWNER="", CHILD_TABLE="ベトナム"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_1", FK_COLUMNS="テンプレート" */
+    IF EXISTS (
+      SELECT * FROM deleted,ベトナム
+      WHERE
+        /*  %JoinFKPK(ベトナム,deleted," = "," AND") */
+        ベトナム.テンプレート = deleted.テンプレート
+    )
+    BEGIN
+      SELECT @errno  = 30001,
+             @errmsg = 'Cannot delete タワーレジデンス because ベトナム exists.'
+      GOTO error
+    END
+
+
+    /* erwin Builtin Trigger */
+    RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
+CREATE TRIGGER tU_タワーレジデンス ON タワーレジデンス FOR UPDATE AS
+/* erwin Builtin Trigger */
+/* UPDATE trigger on タワーレジデンス */
+BEGIN
+  DECLARE  @numrows int,
+           @nullcnt int,
+           @validcnt int,
+           @insテンプレート char(18),
+           @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+
+  SELECT @numrows = @@rowcount
+  /* erwin Builtin Trigger */
+  /* タワーレジデンス  ベトナム on parent update no action */
+  /* ERWIN_RELATION:CHECKSUM="000129bb", PARENT_OWNER="", PARENT_TABLE="タワーレジデンス"
+    CHILD_OWNER="", CHILD_TABLE="ベトナム"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_1", FK_COLUMNS="テンプレート" */
+  IF
+    /* %ParentPK(" OR",UPDATE) */
+    UPDATE(テンプレート)
+  BEGIN
+    IF EXISTS (
+      SELECT * FROM deleted,ベトナム
+      WHERE
+        /*  %JoinFKPK(ベトナム,deleted," = "," AND") */
+        ベトナム.テンプレート = deleted.テンプレート
+    )
+    BEGIN
+      SELECT @errno  = 30005,
+             @errmsg = 'Cannot update タワーレジデンス because ベトナム exists.'
+      GOTO error
+    END
+  END
+
+
+  /* erwin Builtin Trigger */
+  RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
+
+
+CREATE TRIGGER tD_ベトナム ON ベトナム FOR DELETE AS
+/* erwin Builtin Trigger */
+/* DELETE trigger on ベトナム */
+BEGIN
+  DECLARE  @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+    /* erwin Builtin Trigger */
+    /* タワーレジデンス  ベトナム on child delete no action */
+    /* ERWIN_RELATION:CHECKSUM="00016373", PARENT_OWNER="", PARENT_TABLE="タワーレジデンス"
+    CHILD_OWNER="", CHILD_TABLE="ベトナム"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_1", FK_COLUMNS="テンプレート" */
+    IF EXISTS (SELECT * FROM deleted,タワーレジデンス
+      WHERE
+        /* %JoinFKPK(deleted,タワーレジデンス," = "," AND") */
+        deleted.テンプレート = タワーレジデンス.テンプレート AND
+        NOT EXISTS (
+          SELECT * FROM ベトナム
+          WHERE
+            /* %JoinFKPK(ベトナム,タワーレジデンス," = "," AND") */
+            ベトナム.テンプレート = タワーレジデンス.テンプレート
+        )
+    )
+    BEGIN
+      SELECT @errno  = 30010,
+             @errmsg = 'Cannot delete last ベトナム because タワーレジデンス exists.'
+      GOTO error
+    END
+
+
+    /* erwin Builtin Trigger */
+    RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
+CREATE TRIGGER tU_ベトナム ON ベトナム FOR UPDATE AS
+/* erwin Builtin Trigger */
+/* UPDATE trigger on ベトナム */
+BEGIN
+  DECLARE  @numrows int,
+           @nullcnt int,
+           @validcnt int,
+           @insコメリ char(18), 
+           @insテンプレート char(18),
+           @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+
+  SELECT @numrows = @@rowcount
+  /* erwin Builtin Trigger */
+  /* タワーレジデンス  ベトナム on child update no action */
+  /* ERWIN_RELATION:CHECKSUM="00018422", PARENT_OWNER="", PARENT_TABLE="タワーレジデンス"
+    CHILD_OWNER="", CHILD_TABLE="ベトナム"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_1", FK_COLUMNS="テンプレート" */
+  IF
+    /* %ChildFK(" OR",UPDATE) */
+    UPDATE(テンプレート)
+  BEGIN
+    SELECT @nullcnt = 0
+    SELECT @validcnt = count(*)
+      FROM inserted,タワーレジデンス
+        WHERE
+          /* %JoinFKPK(inserted,タワーレジデンス) */
+          inserted.テンプレート = タワーレジデンス.テンプレート
+    /* %NotnullFK(inserted," IS NULL","select @nullcnt = count(*) from inserted where"," AND") */
+    
+    IF @validcnt + @nullcnt != @numrows
+    BEGIN
+      SELECT @errno  = 30007,
+             @errmsg = 'Cannot update ベトナム because タワーレジデンス does not exist.'
+      GOTO error
+    END
+  END
+
+
+  /* erwin Builtin Trigger */
+  RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
