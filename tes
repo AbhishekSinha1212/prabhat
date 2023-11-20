@@ -9,3 +9,15 @@ go
 ALTER TABLE [ベトナム]
 	ADD CONSTRAINT [XPKベトナム] PRIMARY KEY  CLUSTERED ([初めて] ASC)
 go
+
+CREATE TABLE [ベトナム]
+( 
+	[コメリ]             char(18)  NOT NULL ,
+	[ござい]             char(18)  NULL ,
+	[テンプレート]       char(18)  NOT NULL 
+)
+go
+
+ALTER TABLE [ベトナム]
+	ADD CONSTRAINT [XPKベトナム] PRIMARY KEY  CLUSTERED ([コメリ] ASC,[テンプレート] ASC)
+go
