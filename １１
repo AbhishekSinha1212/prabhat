@@ -11,6 +11,17 @@ ALTER TABLE [たｂぇ]
 	ADD CONSTRAINT [XPKたｂぇ] PRIMARY KEY  CLUSTERED ([お願いします] ASC,[フィリピン] ASC)
 go
 
+CREATE TABLE [パラぢせ]
+( 
+	[heaven]             char(18)  NOT NULL ,
+	[parade]             char(18)  NULL 
+)
+go
+
+ALTER TABLE [パラぢせ]
+	ADD CONSTRAINT [XPKパラぢせ] PRIMARY KEY  CLUSTERED ([heaven] ASC)
+go
+
 CREATE TABLE [ベスト]
 ( 
 	[フィリピン]         char(18)  NOT NULL ,
