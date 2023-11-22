@@ -1,0 +1,221 @@
+
+CREATE TABLE [たｂぇ]
+( 
+	[お願いします]       char(18)  NOT NULL ,
+	[とぉ]               char(18)  NULL ,
+	[フィリピン]         char(18)  NOT NULL 
+)
+go
+
+ALTER TABLE [たｂぇ]
+	ADD CONSTRAINT [XPKたｂぇ] PRIMARY KEY  CLUSTERED ([お願いします] ASC,[フィリピン] ASC)
+go
+
+CREATE TABLE [ベスト]
+( 
+	[フィリピン]         char(18)  NOT NULL ,
+	[背恩顧]             char(18)  NULL 
+)
+go
+
+ALTER TABLE [ベスト]
+	ADD CONSTRAINT [XPKベスト] PRIMARY KEY  CLUSTERED ([フィリピン] ASC)
+go
+
+
+ALTER TABLE [たｂぇ]
+	ADD CONSTRAINT [R_1] FOREIGN KEY ([フィリピン]) REFERENCES [ベスト]([フィリピン])
+		ON DELETE NO ACTION
+		ON UPDATE NO ACTION
+go
+
+
+CREATE TRIGGER tD_たｂぇ ON たｂぇ FOR DELETE AS
+/* erwin Builtin Trigger */
+/* DELETE trigger on たｂぇ */
+BEGIN
+  DECLARE  @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+    /* erwin Builtin Trigger */
+    /* ベスト  たｂぇ on child delete no action */
+    /* ERWIN_RELATION:CHECKSUM="00013a61", PARENT_OWNER="", PARENT_TABLE="ベスト"
+    CHILD_OWNER="", CHILD_TABLE="たｂぇ"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_1", FK_COLUMNS="フィリピン" */
+    IF EXISTS (SELECT * FROM deleted,ベスト
+      WHERE
+        /* %JoinFKPK(deleted,ベスト," = "," AND") */
+        deleted.フィリピン = ベスト.フィリピン AND
+        NOT EXISTS (
+          SELECT * FROM たｂぇ
+          WHERE
+            /* %JoinFKPK(たｂぇ,ベスト," = "," AND") */
+            たｂぇ.フィリピン = ベスト.フィリピン
+        )
+    )
+    BEGIN
+      SELECT @errno  = 30010,
+             @errmsg = 'Cannot delete last たｂぇ because ベスト exists.'
+      GOTO error
+    END
+
+
+    /* erwin Builtin Trigger */
+    RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
+CREATE TRIGGER tU_たｂぇ ON たｂぇ FOR UPDATE AS
+/* erwin Builtin Trigger */
+/* UPDATE trigger on たｂぇ */
+BEGIN
+  DECLARE  @numrows int,
+           @nullcnt int,
+           @validcnt int,
+           @insお願いします char(18), 
+           @insフィリピン char(18),
+           @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+
+  SELECT @numrows = @@rowcount
+  /* erwin Builtin Trigger */
+  /* ベスト  たｂぇ on child update no action */
+  /* ERWIN_RELATION:CHECKSUM="00016e15", PARENT_OWNER="", PARENT_TABLE="ベスト"
+    CHILD_OWNER="", CHILD_TABLE="たｂぇ"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_1", FK_COLUMNS="フィリピン" */
+  IF
+    /* %ChildFK(" OR",UPDATE) */
+    UPDATE(フィリピン)
+  BEGIN
+    SELECT @nullcnt = 0
+    SELECT @validcnt = count(*)
+      FROM inserted,ベスト
+        WHERE
+          /* %JoinFKPK(inserted,ベスト) */
+          inserted.フィリピン = ベスト.フィリピン
+    /* %NotnullFK(inserted," IS NULL","select @nullcnt = count(*) from inserted where"," AND") */
+    
+    IF @validcnt + @nullcnt != @numrows
+    BEGIN
+      SELECT @errno  = 30007,
+             @errmsg = 'Cannot update たｂぇ because ベスト does not exist.'
+      GOTO error
+    END
+  END
+
+
+  /* erwin Builtin Trigger */
+  RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
+
+
+CREATE TRIGGER tD_ベスト ON ベスト FOR DELETE AS
+/* erwin Builtin Trigger */
+/* DELETE trigger on ベスト */
+BEGIN
+  DECLARE  @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+    /* erwin Builtin Trigger */
+    /* ベスト  たｂぇ on parent delete no action */
+    /* ERWIN_RELATION:CHECKSUM="000104ea", PARENT_OWNER="", PARENT_TABLE="ベスト"
+    CHILD_OWNER="", CHILD_TABLE="たｂぇ"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_1", FK_COLUMNS="フィリピン" */
+    IF EXISTS (
+      SELECT * FROM deleted,たｂぇ
+      WHERE
+        /*  %JoinFKPK(たｂぇ,deleted," = "," AND") */
+        たｂぇ.フィリピン = deleted.フィリピン
+    )
+    BEGIN
+      SELECT @errno  = 30001,
+             @errmsg = 'Cannot delete ベスト because たｂぇ exists.'
+      GOTO error
+    END
+
+
+    /* erwin Builtin Trigger */
+    RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
+CREATE TRIGGER tU_ベスト ON ベスト FOR UPDATE AS
+/* erwin Builtin Trigger */
+/* UPDATE trigger on ベスト */
+BEGIN
+  DECLARE  @numrows int,
+           @nullcnt int,
+           @validcnt int,
+           @insフィリピン char(18),
+           @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+
+  SELECT @numrows = @@rowcount
+  /* erwin Builtin Trigger */
+  /* ベスト  たｂぇ on parent update no action */
+  /* ERWIN_RELATION:CHECKSUM="0001245a", PARENT_OWNER="", PARENT_TABLE="ベスト"
+    CHILD_OWNER="", CHILD_TABLE="たｂぇ"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_1", FK_COLUMNS="フィリピン" */
+  IF
+    /* %ParentPK(" OR",UPDATE) */
+    UPDATE(フィリピン)
+  BEGIN
+    IF EXISTS (
+      SELECT * FROM deleted,たｂぇ
+      WHERE
+        /*  %JoinFKPK(たｂぇ,deleted," = "," AND") */
+        たｂぇ.フィリピン = deleted.フィリピン
+    )
+    BEGIN
+      SELECT @errno  = 30005,
+             @errmsg = 'Cannot update ベスト because たｂぇ exists.'
+      GOTO error
+    END
+  END
+
+
+  /* erwin Builtin Trigger */
+  RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
