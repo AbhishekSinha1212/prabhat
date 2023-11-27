@@ -1,4 +1,15 @@
 
+CREATE TABLE [E_4]
+( 
+	[ウェブサイト]       char(18)  NOT NULL ,
+	[ｐぁせ]             char(18)  NULL 
+)
+go
+
+ALTER TABLE [E_4]
+	ADD CONSTRAINT [XPKE_4] PRIMARY KEY  CLUSTERED ([ウェブサイト] ASC)
+go
+
 CREATE TABLE [たｂぇ]
 ( 
 	[お願いします]       char(18)  NOT NULL ,
