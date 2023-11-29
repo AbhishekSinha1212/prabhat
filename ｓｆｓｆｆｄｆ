@@ -1,0 +1,221 @@
+
+CREATE TABLE [ウェディング]
+( 
+	[パラぢせ]           char(18)  NOT NULL ,
+	[お願いします]       char(18)  NULL 
+)
+go
+
+ALTER TABLE [ウェディング]
+	ADD CONSTRAINT [XPKウェディング] PRIMARY KEY  CLUSTERED ([パラぢせ] ASC)
+go
+
+CREATE TABLE [ベアリング交換]
+( 
+	[勲章]               char(18)  NOT NULL ,
+	[ジャパン]           char(18)  NULL ,
+	[パラぢせ]           char(18)  NOT NULL 
+)
+go
+
+ALTER TABLE [ベアリング交換]
+	ADD CONSTRAINT [XPKベアリング交換] PRIMARY KEY  CLUSTERED ([勲章] ASC,[パラぢせ] ASC)
+go
+
+
+ALTER TABLE [ベアリング交換]
+	ADD CONSTRAINT [レアチーズケーキ] FOREIGN KEY ([パラぢせ]) REFERENCES [ウェディング]([パラぢせ])
+		ON DELETE NO ACTION
+		ON UPDATE NO ACTION
+go
+
+
+CREATE TRIGGER tD_ウェディング ON ウェディング FOR DELETE AS
+/* erwin Builtin Trigger */
+/* DELETE trigger on ウェディング */
+BEGIN
+  DECLARE  @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+    /* erwin Builtin Trigger */
+    /* ウェディング  ベアリング交換 on parent delete no action */
+    /* ERWIN_RELATION:CHECKSUM="000120e8", PARENT_OWNER="", PARENT_TABLE="ウェディング"
+    CHILD_OWNER="", CHILD_TABLE="ベアリング交換"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="レアチーズケーキ", FK_COLUMNS="パラぢせ" */
+    IF EXISTS (
+      SELECT * FROM deleted,ベアリング交換
+      WHERE
+        /*  %JoinFKPK(ベアリング交換,deleted," = "," AND") */
+        ベアリング交換.パラぢせ = deleted.パラぢせ
+    )
+    BEGIN
+      SELECT @errno  = 30001,
+             @errmsg = 'Cannot delete ウェディング because ベアリング交換 exists.'
+      GOTO error
+    END
+
+
+    /* erwin Builtin Trigger */
+    RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
+CREATE TRIGGER tU_ウェディング ON ウェディング FOR UPDATE AS
+/* erwin Builtin Trigger */
+/* UPDATE trigger on ウェディング */
+BEGIN
+  DECLARE  @numrows int,
+           @nullcnt int,
+           @validcnt int,
+           @insパラぢせ char(18),
+           @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+
+  SELECT @numrows = @@rowcount
+  /* erwin Builtin Trigger */
+  /* ウェディング  ベアリング交換 on parent update no action */
+  /* ERWIN_RELATION:CHECKSUM="00013b73", PARENT_OWNER="", PARENT_TABLE="ウェディング"
+    CHILD_OWNER="", CHILD_TABLE="ベアリング交換"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="レアチーズケーキ", FK_COLUMNS="パラぢせ" */
+  IF
+    /* %ParentPK(" OR",UPDATE) */
+    UPDATE(パラぢせ)
+  BEGIN
+    IF EXISTS (
+      SELECT * FROM deleted,ベアリング交換
+      WHERE
+        /*  %JoinFKPK(ベアリング交換,deleted," = "," AND") */
+        ベアリング交換.パラぢせ = deleted.パラぢせ
+    )
+    BEGIN
+      SELECT @errno  = 30005,
+             @errmsg = 'Cannot update ウェディング because ベアリング交換 exists.'
+      GOTO error
+    END
+  END
+
+
+  /* erwin Builtin Trigger */
+  RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
+
+
+CREATE TRIGGER tD_ベアリング交換 ON ベアリング交換 FOR DELETE AS
+/* erwin Builtin Trigger */
+/* DELETE trigger on ベアリング交換 */
+BEGIN
+  DECLARE  @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+    /* erwin Builtin Trigger */
+    /* ウェディング  ベアリング交換 on child delete no action */
+    /* ERWIN_RELATION:CHECKSUM="0001705c", PARENT_OWNER="", PARENT_TABLE="ウェディング"
+    CHILD_OWNER="", CHILD_TABLE="ベアリング交換"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="レアチーズケーキ", FK_COLUMNS="パラぢせ" */
+    IF EXISTS (SELECT * FROM deleted,ウェディング
+      WHERE
+        /* %JoinFKPK(deleted,ウェディング," = "," AND") */
+        deleted.パラぢせ = ウェディング.パラぢせ AND
+        NOT EXISTS (
+          SELECT * FROM ベアリング交換
+          WHERE
+            /* %JoinFKPK(ベアリング交換,ウェディング," = "," AND") */
+            ベアリング交換.パラぢせ = ウェディング.パラぢせ
+        )
+    )
+    BEGIN
+      SELECT @errno  = 30010,
+             @errmsg = 'Cannot delete last ベアリング交換 because ウェディング exists.'
+      GOTO error
+    END
+
+
+    /* erwin Builtin Trigger */
+    RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
+CREATE TRIGGER tU_ベアリング交換 ON ベアリング交換 FOR UPDATE AS
+/* erwin Builtin Trigger */
+/* UPDATE trigger on ベアリング交換 */
+BEGIN
+  DECLARE  @numrows int,
+           @nullcnt int,
+           @validcnt int,
+           @ins勲章 char(18), 
+           @insパラぢせ char(18),
+           @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+
+  SELECT @numrows = @@rowcount
+  /* erwin Builtin Trigger */
+  /* ウェディング  ベアリング交換 on child update no action */
+  /* ERWIN_RELATION:CHECKSUM="00017e55", PARENT_OWNER="", PARENT_TABLE="ウェディング"
+    CHILD_OWNER="", CHILD_TABLE="ベアリング交換"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="レアチーズケーキ", FK_COLUMNS="パラぢせ" */
+  IF
+    /* %ChildFK(" OR",UPDATE) */
+    UPDATE(パラぢせ)
+  BEGIN
+    SELECT @nullcnt = 0
+    SELECT @validcnt = count(*)
+      FROM inserted,ウェディング
+        WHERE
+          /* %JoinFKPK(inserted,ウェディング) */
+          inserted.パラぢせ = ウェディング.パラぢせ
+    /* %NotnullFK(inserted," IS NULL","select @nullcnt = count(*) from inserted where"," AND") */
+    
+    IF @validcnt + @nullcnt != @numrows
+    BEGIN
+      SELECT @errno  = 30007,
+             @errmsg = 'Cannot update ベアリング交換 because ウェディング does not exist.'
+      GOTO error
+    END
+  END
+
+
+  /* erwin Builtin Trigger */
+  RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
