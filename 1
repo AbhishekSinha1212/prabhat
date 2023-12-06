@@ -176,25 +176,25 @@ CREATE TABLE [STORE]
 go
 
 ALTER TABLE [CUST]
-	ADD CONSTRAINT [XPKCUSTOMER] PRIMARY KEY  CLUSTERED ([customer_number] ASC)
+	ADD CONSTRAINT [XPKCUSTOMER] PRIMARY KEY  CLUSTERED ([CUST_number] ASC)
 go
 
 ALTER TABLE [CUST]
-	ADD CONSTRAINT [XAK1CUSTOMER] UNIQUE ([customer_address]  ASC)
+	ADD CONSTRAINT [XAK1CUSTOMER] UNIQUE ([CUST_address]  ASC)
 go
 
 CREATE NONCLUSTERED INDEX [XIE1CUSTOMER] ON [CUST]
 ( 
-	[customer_last_name]  ASC
+	[CUST_last_name]      ASC
 )
 go
 
 ALTER TABLE [CUST_CREDIT]
-	ADD CONSTRAINT [XPKCUSTOMER_CREDIT] PRIMARY KEY  CLUSTERED ([customer_number] ASC)
+	ADD CONSTRAINT [XPKCUSTOMER_CREDIT] PRIMARY KEY  CLUSTERED ([CUST_number] ASC)
 go
 
 ALTER TABLE [EMP]
-	ADD CONSTRAINT [XPKEMPLOYEE] PRIMARY KEY  CLUSTERED ([employee_number] ASC)
+	ADD CONSTRAINT [XPKEMPLOYEE] PRIMARY KEY  CLUSTERED ([EMP_number] ASC)
 go
 
 ALTER TABLE [EMP]
@@ -203,12 +203,12 @@ go
 
 CREATE NONCLUSTERED INDEX [XIE1EMPLOYEE] ON [EMP]
 ( 
-	[employee_first_name]  ASC
+	[EMP_first_name]      ASC
 )
 go
 
 ALTER TABLE [MO_RENT_REC]
-	ADD CONSTRAINT [XPKMOVIE_RENTAL_RECORD] PRIMARY KEY  CLUSTERED ([rental_record_date] ASC,[movie_copy_number] ASC,[movie_number] ASC,[soc_sec_number] ASC,[EMP_phone] ASC,[customer_number] ASC)
+	ADD CONSTRAINT [XPKMOVIE_RENTAL_RECORD] PRIMARY KEY  CLUSTERED ([rental_record_date] ASC,[mo_co_num] ASC,[movie_number] ASC,[soc_sec_number] ASC,[EMP_phone] ASC,[CUST_number] ASC)
 go
 
 ALTER TABLE [MOVIE]
@@ -220,7 +220,7 @@ ALTER TABLE [MOVIE]
 go
 
 ALTER TABLE [MOVIE_COPY]
-	ADD CONSTRAINT [XPKMOVIE_COPY] PRIMARY KEY  CLUSTERED ([movie_copy_number] ASC,[movie_number] ASC)
+	ADD CONSTRAINT [XPKMOVIE_COPY] PRIMARY KEY  CLUSTERED ([mo_co_num] ASC,[movie_number] ASC)
 go
 
 ALTER TABLE [MOVIE_STORE]
@@ -351,7 +351,7 @@ BEGIN
            @errmsg  varchar(255)
     /* erwin Builtin Trigger */
     /* CUST makes PAYMENT on parent delete no action */
-    /* ERWIN_RELATION:CHECKSUM="00021ed5", PARENT_OWNER="", PARENT_TABLE="CUST"
+    /* ERWIN_RELATION:CHECKSUM="0002122a", PARENT_OWNER="", PARENT_TABLE="CUST"
     CHILD_OWNER="", CHILD_TABLE="PAYMENT"
     P2C_VERB_PHRASE="makes", C2P_VERB_PHRASE="is made by", 
     FK_CONSTRAINT="R_7_1", FK_COLUMNS="customer_no" */
@@ -359,7 +359,7 @@ BEGIN
       SELECT * FROM deleted,PAYMENT
       WHERE
         /*  %JoinFKPK(PAYMENT,deleted," = "," AND") */
-        PAYMENT.customer_no = deleted.customer_number
+        PAYMENT.customer_no = deleted.CUST_number
     )
     BEGIN
       SELECT @errno  = 30001,
@@ -372,12 +372,12 @@ BEGIN
     /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="CUST"
     CHILD_OWNER="", CHILD_TABLE="MO_RENT_REC"
     P2C_VERB_PHRASE="rents under", C2P_VERB_PHRASE="identifies_1", 
-    FK_CONSTRAINT="R_8_1", FK_COLUMNS="customer_number" */
+    FK_CONSTRAINT="R_8_1", FK_COLUMNS="CUST_number" */
     IF EXISTS (
       SELECT * FROM deleted,MO_RENT_REC
       WHERE
         /*  %JoinFKPK(MO_RENT_REC,deleted," = "," AND") */
-        MO_RENT_REC.customer_number = deleted.customer_number
+        MO_RENT_REC.CUST_number = deleted.CUST_number
     )
     BEGIN
       SELECT @errno  = 30001,
@@ -405,7 +405,7 @@ BEGIN
   DECLARE  @numrows int,
            @nullcnt int,
            @validcnt int,
-           @inscustomer_number integer,
+           @insCUST_number integer,
            @errno   int,
            @severity int,
            @state    int,
@@ -414,19 +414,19 @@ BEGIN
   SELECT @numrows = @@rowcount
   /* erwin Builtin Trigger */
   /* CUST makes PAYMENT on parent update no action */
-  /* ERWIN_RELATION:CHECKSUM="000258bf", PARENT_OWNER="", PARENT_TABLE="CUST"
+  /* ERWIN_RELATION:CHECKSUM="00023ee5", PARENT_OWNER="", PARENT_TABLE="CUST"
     CHILD_OWNER="", CHILD_TABLE="PAYMENT"
     P2C_VERB_PHRASE="makes", C2P_VERB_PHRASE="is made by", 
     FK_CONSTRAINT="R_7_1", FK_COLUMNS="customer_no" */
   IF
     /* %ParentPK(" OR",UPDATE) */
-    UPDATE(customer_number)
+    UPDATE(CUST_number)
   BEGIN
     IF EXISTS (
       SELECT * FROM deleted,PAYMENT
       WHERE
         /*  %JoinFKPK(PAYMENT,deleted," = "," AND") */
-        PAYMENT.customer_no = deleted.customer_number
+        PAYMENT.customer_no = deleted.CUST_number
     )
     BEGIN
       SELECT @errno  = 30005,
@@ -440,16 +440,16 @@ BEGIN
   /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="CUST"
     CHILD_OWNER="", CHILD_TABLE="MO_RENT_REC"
     P2C_VERB_PHRASE="rents under", C2P_VERB_PHRASE="identifies_1", 
-    FK_CONSTRAINT="R_8_1", FK_COLUMNS="customer_number" */
+    FK_CONSTRAINT="R_8_1", FK_COLUMNS="CUST_number" */
   IF
     /* %ParentPK(" OR",UPDATE) */
-    UPDATE(customer_number)
+    UPDATE(CUST_number)
   BEGIN
     IF EXISTS (
       SELECT * FROM deleted,MO_RENT_REC
       WHERE
         /*  %JoinFKPK(MO_RENT_REC,deleted," = "," AND") */
-        MO_RENT_REC.customer_number = deleted.customer_number
+        MO_RENT_REC.CUST_number = deleted.CUST_number
     )
     BEGIN
       SELECT @errno  = 30005,
@@ -483,15 +483,15 @@ BEGIN
            @errmsg  varchar(255)
     /* erwin Builtin Trigger */
     /* CUST_CREDIT makes PAYMENT on parent delete no action */
-    /* ERWIN_RELATION:CHECKSUM="00022ea4", PARENT_OWNER="", PARENT_TABLE="CUST_CREDIT"
+    /* ERWIN_RELATION:CHECKSUM="000219b6", PARENT_OWNER="", PARENT_TABLE="CUST_CREDIT"
     CHILD_OWNER="", CHILD_TABLE="PAYMENT"
     P2C_VERB_PHRASE="makes", C2P_VERB_PHRASE="is made by", 
-    FK_CONSTRAINT="R_7_2", FK_COLUMNS="customer_number" */
+    FK_CONSTRAINT="R_7_2", FK_COLUMNS="CUST_number" */
     IF EXISTS (
       SELECT * FROM deleted,PAYMENT
       WHERE
         /*  %JoinFKPK(PAYMENT,deleted," = "," AND") */
-        PAYMENT.customer_number = deleted.customer_number
+        PAYMENT.CUST_number = deleted.CUST_number
     )
     BEGIN
       SELECT @errno  = 30001,
@@ -504,12 +504,12 @@ BEGIN
     /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="CUST_CREDIT"
     CHILD_OWNER="", CHILD_TABLE="MO_RENT_REC"
     P2C_VERB_PHRASE="rents under", C2P_VERB_PHRASE="identifies_2", 
-    FK_CONSTRAINT="R_8_2", FK_COLUMNS="customer_number" */
+    FK_CONSTRAINT="R_8_2", FK_COLUMNS="CUST_number" */
     IF EXISTS (
       SELECT * FROM deleted,MO_RENT_REC
       WHERE
         /*  %JoinFKPK(MO_RENT_REC,deleted," = "," AND") */
-        MO_RENT_REC.customer_number = deleted.customer_number
+        MO_RENT_REC.CUST_number = deleted.CUST_number
     )
     BEGIN
       SELECT @errno  = 30001,
@@ -537,7 +537,7 @@ BEGIN
   DECLARE  @numrows int,
            @nullcnt int,
            @validcnt int,
-           @inscustomer_number integer,
+           @insCUST_number integer,
            @errno   int,
            @severity int,
            @state    int,
@@ -546,19 +546,19 @@ BEGIN
   SELECT @numrows = @@rowcount
   /* erwin Builtin Trigger */
   /* CUST_CREDIT makes PAYMENT on parent update no action */
-  /* ERWIN_RELATION:CHECKSUM="00026a35", PARENT_OWNER="", PARENT_TABLE="CUST_CREDIT"
+  /* ERWIN_RELATION:CHECKSUM="0002562f", PARENT_OWNER="", PARENT_TABLE="CUST_CREDIT"
     CHILD_OWNER="", CHILD_TABLE="PAYMENT"
     P2C_VERB_PHRASE="makes", C2P_VERB_PHRASE="is made by", 
-    FK_CONSTRAINT="R_7_2", FK_COLUMNS="customer_number" */
+    FK_CONSTRAINT="R_7_2", FK_COLUMNS="CUST_number" */
   IF
     /* %ParentPK(" OR",UPDATE) */
-    UPDATE(customer_number)
+    UPDATE(CUST_number)
   BEGIN
     IF EXISTS (
       SELECT * FROM deleted,PAYMENT
       WHERE
         /*  %JoinFKPK(PAYMENT,deleted," = "," AND") */
-        PAYMENT.customer_number = deleted.customer_number
+        PAYMENT.CUST_number = deleted.CUST_number
     )
     BEGIN
       SELECT @errno  = 30005,
@@ -572,16 +572,16 @@ BEGIN
   /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="CUST_CREDIT"
     CHILD_OWNER="", CHILD_TABLE="MO_RENT_REC"
     P2C_VERB_PHRASE="rents under", C2P_VERB_PHRASE="identifies_2", 
-    FK_CONSTRAINT="R_8_2", FK_COLUMNS="customer_number" */
+    FK_CONSTRAINT="R_8_2", FK_COLUMNS="CUST_number" */
   IF
     /* %ParentPK(" OR",UPDATE) */
-    UPDATE(customer_number)
+    UPDATE(CUST_number)
   BEGIN
     IF EXISTS (
       SELECT * FROM deleted,MO_RENT_REC
       WHERE
         /*  %JoinFKPK(MO_RENT_REC,deleted," = "," AND") */
-        MO_RENT_REC.customer_number = deleted.customer_number
+        MO_RENT_REC.CUST_number = deleted.CUST_number
     )
     BEGIN
       SELECT @errno  = 30005,
@@ -615,15 +615,15 @@ BEGIN
            @errmsg  varchar(255)
     /* erwin Builtin Trigger */
     /* EMP receives PAYMENT on parent delete no action */
-    /* ERWIN_RELATION:CHECKSUM="00053e28", PARENT_OWNER="", PARENT_TABLE="EMP"
+    /* ERWIN_RELATION:CHECKSUM="00054c9f", PARENT_OWNER="", PARENT_TABLE="EMP"
     CHILD_OWNER="", CHILD_TABLE="PAYMENT"
     P2C_VERB_PHRASE="receives", C2P_VERB_PHRASE="is received by", 
-    FK_CONSTRAINT="receives", FK_COLUMNS="employee_number" */
+    FK_CONSTRAINT="receives", FK_COLUMNS="EMP_number" */
     IF EXISTS (
       SELECT * FROM deleted,PAYMENT
       WHERE
         /*  %JoinFKPK(PAYMENT,deleted," = "," AND") */
-        PAYMENT.employee_number = deleted.employee_number
+        PAYMENT.EMP_number = deleted.EMP_number
     )
     BEGIN
       SELECT @errno  = 30001,
@@ -641,7 +641,7 @@ BEGIN
       SELECT * FROM deleted,EMP
       WHERE
         /*  %JoinFKPK(EMP,deleted," = "," AND") */
-        EMP.supervisor = deleted.employee_number
+        EMP.supervisor = deleted.EMP_number
     )
     BEGIN
       SELECT @errno  = 30001,
@@ -677,12 +677,12 @@ BEGIN
     IF EXISTS (SELECT * FROM deleted,EMP
       WHERE
         /* %JoinFKPK(deleted,EMP," = "," AND") */
-        deleted.supervisor = EMP.employee_number AND
+        deleted.supervisor = EMP.EMP_number AND
         NOT EXISTS (
           SELECT * FROM EMP
           WHERE
             /* %JoinFKPK(EMP,EMP," = "," AND") */
-            EMP.supervisor = EMP.employee_number
+            EMP.supervisor = EMP.EMP_number
         )
     )
     BEGIN
@@ -734,7 +734,7 @@ BEGIN
   DECLARE  @numrows int,
            @nullcnt int,
            @validcnt int,
-           @insemployee_number varchar(20),
+           @insEMP_number varchar(20),
            @errno   int,
            @severity int,
            @state    int,
@@ -743,19 +743,19 @@ BEGIN
   SELECT @numrows = @@rowcount
   /* erwin Builtin Trigger */
   /* EMP receives PAYMENT on parent update no action */
-  /* ERWIN_RELATION:CHECKSUM="00064bc0", PARENT_OWNER="", PARENT_TABLE="EMP"
+  /* ERWIN_RELATION:CHECKSUM="0006479b", PARENT_OWNER="", PARENT_TABLE="EMP"
     CHILD_OWNER="", CHILD_TABLE="PAYMENT"
     P2C_VERB_PHRASE="receives", C2P_VERB_PHRASE="is received by", 
-    FK_CONSTRAINT="receives", FK_COLUMNS="employee_number" */
+    FK_CONSTRAINT="receives", FK_COLUMNS="EMP_number" */
   IF
     /* %ParentPK(" OR",UPDATE) */
-    UPDATE(employee_number)
+    UPDATE(EMP_number)
   BEGIN
     IF EXISTS (
       SELECT * FROM deleted,PAYMENT
       WHERE
         /*  %JoinFKPK(PAYMENT,deleted," = "," AND") */
-        PAYMENT.employee_number = deleted.employee_number
+        PAYMENT.EMP_number = deleted.EMP_number
     )
     BEGIN
       SELECT @errno  = 30005,
@@ -772,13 +772,13 @@ BEGIN
     FK_CONSTRAINT="reports_to", FK_COLUMNS="supervisor" */
   IF
     /* %ParentPK(" OR",UPDATE) */
-    UPDATE(employee_number)
+    UPDATE(EMP_number)
   BEGIN
     IF EXISTS (
       SELECT * FROM deleted,EMP
       WHERE
         /*  %JoinFKPK(EMP,deleted," = "," AND") */
-        EMP.supervisor = deleted.employee_number
+        EMP.supervisor = deleted.EMP_number
     )
     BEGIN
       SELECT @errno  = 30005,
@@ -795,7 +795,7 @@ BEGIN
     FK_CONSTRAINT="completes", FK_COLUMNS="soc_sec_number""EMP_phone" */
   IF
     /* %ParentPK(" OR",UPDATE) */
-    UPDATE(employee_number)
+    UPDATE(EMP_number)
   BEGIN
     IF EXISTS (
       SELECT * FROM deleted,MO_RENT_REC
@@ -826,7 +826,7 @@ BEGIN
       FROM inserted,EMP
         WHERE
           /* %JoinFKPK(inserted,EMP) */
-          inserted.supervisor = EMP.employee_number
+          inserted.supervisor = EMP.EMP_number
     /* %NotnullFK(inserted," IS NULL","select @nullcnt = count(*) from inserted where"," AND") */
     select @nullcnt = count(*) from inserted where
       inserted.supervisor IS NULL
@@ -890,7 +890,7 @@ BEGIN
            @errmsg  varchar(255)
     /* erwin Builtin Trigger */
     /* PAYMENT is made on MO_RENT_REC on child delete no action */
-    /* ERWIN_RELATION:CHECKSUM="00072798", PARENT_OWNER="", PARENT_TABLE="PAYMENT"
+    /* ERWIN_RELATION:CHECKSUM="0006e5e3", PARENT_OWNER="", PARENT_TABLE="PAYMENT"
     CHILD_OWNER="", CHILD_TABLE="MO_RENT_REC"
     P2C_VERB_PHRASE="is made on", C2P_VERB_PHRASE="requires", 
     FK_CONSTRAINT="is_made_on", FK_COLUMNS="payment_transaction_number" */
@@ -916,16 +916,16 @@ BEGIN
     /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="CUST_CREDIT"
     CHILD_OWNER="", CHILD_TABLE="MO_RENT_REC"
     P2C_VERB_PHRASE="rents under", C2P_VERB_PHRASE="identifies_2", 
-    FK_CONSTRAINT="R_8_2", FK_COLUMNS="customer_number" */
+    FK_CONSTRAINT="R_8_2", FK_COLUMNS="CUST_number" */
     IF EXISTS (SELECT * FROM deleted,CUST_CREDIT
       WHERE
         /* %JoinFKPK(deleted,CUST_CREDIT," = "," AND") */
-        deleted.customer_number = CUST_CREDIT.customer_number AND
+        deleted.CUST_number = CUST_CREDIT.CUST_number AND
         NOT EXISTS (
           SELECT * FROM MO_RENT_REC
           WHERE
             /* %JoinFKPK(MO_RENT_REC,CUST_CREDIT," = "," AND") */
-            MO_RENT_REC.customer_number = CUST_CREDIT.customer_number
+            MO_RENT_REC.CUST_number = CUST_CREDIT.CUST_number
         )
     )
     BEGIN
@@ -939,16 +939,16 @@ BEGIN
     /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="CUST"
     CHILD_OWNER="", CHILD_TABLE="MO_RENT_REC"
     P2C_VERB_PHRASE="rents under", C2P_VERB_PHRASE="identifies_1", 
-    FK_CONSTRAINT="R_8_1", FK_COLUMNS="customer_number" */
+    FK_CONSTRAINT="R_8_1", FK_COLUMNS="CUST_number" */
     IF EXISTS (SELECT * FROM deleted,CUST
       WHERE
         /* %JoinFKPK(deleted,CUST," = "," AND") */
-        deleted.customer_number = CUST.customer_number AND
+        deleted.CUST_number = CUST.CUST_number AND
         NOT EXISTS (
           SELECT * FROM MO_RENT_REC
           WHERE
             /* %JoinFKPK(MO_RENT_REC,CUST," = "," AND") */
-            MO_RENT_REC.customer_number = CUST.customer_number
+            MO_RENT_REC.CUST_number = CUST.CUST_number
         )
     )
     BEGIN
@@ -962,17 +962,17 @@ BEGIN
     /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="MOVIE_COPY"
     CHILD_OWNER="", CHILD_TABLE="MO_RENT_REC"
     P2C_VERB_PHRASE="is rented under", C2P_VERB_PHRASE="records rental of a", 
-    FK_CONSTRAINT="is_rented_under", FK_COLUMNS="movie_copy_number""movie_number" */
+    FK_CONSTRAINT="is_rented_under", FK_COLUMNS="mo_co_num""movie_number" */
     IF EXISTS (SELECT * FROM deleted,MOVIE_COPY
       WHERE
         /* %JoinFKPK(deleted,MOVIE_COPY," = "," AND") */
-        deleted.movie_copy_number = MOVIE_COPY.movie_copy_number AND
+        deleted.mo_co_num = MOVIE_COPY.mo_co_num AND
         deleted.movie_number = MOVIE_COPY.movie_number AND
         NOT EXISTS (
           SELECT * FROM MO_RENT_REC
           WHERE
             /* %JoinFKPK(MO_RENT_REC,MOVIE_COPY," = "," AND") */
-            MO_RENT_REC.movie_copy_number = MOVIE_COPY.movie_copy_number AND
+            MO_RENT_REC.mo_co_num = MOVIE_COPY.mo_co_num AND
             MO_RENT_REC.movie_number = MOVIE_COPY.movie_number
         )
     )
@@ -1030,9 +1030,9 @@ BEGIN
            @insEMP_phone phone, 
            @inssoc_sec_number integer, 
            @insrental_record_date datetime, 
-           @insmovie_copy_number integer, 
+           @insmo_co_num integer, 
            @insmovie_number integer, 
-           @inscustomer_number integer,
+           @insCUST_number integer,
            @errno   int,
            @severity int,
            @state    int,
@@ -1041,7 +1041,7 @@ BEGIN
   SELECT @numrows = @@rowcount
   /* erwin Builtin Trigger */
   /* PAYMENT is made on MO_RENT_REC on child update no action */
-  /* ERWIN_RELATION:CHECKSUM="0007a9b1", PARENT_OWNER="", PARENT_TABLE="PAYMENT"
+  /* ERWIN_RELATION:CHECKSUM="000797ed", PARENT_OWNER="", PARENT_TABLE="PAYMENT"
     CHILD_OWNER="", CHILD_TABLE="MO_RENT_REC"
     P2C_VERB_PHRASE="is made on", C2P_VERB_PHRASE="requires", 
     FK_CONSTRAINT="is_made_on", FK_COLUMNS="payment_transaction_number" */
@@ -1071,17 +1071,17 @@ BEGIN
   /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="CUST_CREDIT"
     CHILD_OWNER="", CHILD_TABLE="MO_RENT_REC"
     P2C_VERB_PHRASE="rents under", C2P_VERB_PHRASE="identifies_2", 
-    FK_CONSTRAINT="R_8_2", FK_COLUMNS="customer_number" */
+    FK_CONSTRAINT="R_8_2", FK_COLUMNS="CUST_number" */
   IF
     /* %ChildFK(" OR",UPDATE) */
-    UPDATE(customer_number)
+    UPDATE(CUST_number)
   BEGIN
     SELECT @nullcnt = 0
     SELECT @validcnt = count(*)
       FROM inserted,CUST_CREDIT
         WHERE
           /* %JoinFKPK(inserted,CUST_CREDIT) */
-          inserted.customer_number = CUST_CREDIT.customer_number
+          inserted.CUST_number = CUST_CREDIT.CUST_number
     /* %NotnullFK(inserted," IS NULL","select @nullcnt = count(*) from inserted where"," AND") */
     
     IF @validcnt + @nullcnt != @numrows
@@ -1097,17 +1097,17 @@ BEGIN
   /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="CUST"
     CHILD_OWNER="", CHILD_TABLE="MO_RENT_REC"
     P2C_VERB_PHRASE="rents under", C2P_VERB_PHRASE="identifies_1", 
-    FK_CONSTRAINT="R_8_1", FK_COLUMNS="customer_number" */
+    FK_CONSTRAINT="R_8_1", FK_COLUMNS="CUST_number" */
   IF
     /* %ChildFK(" OR",UPDATE) */
-    UPDATE(customer_number)
+    UPDATE(CUST_number)
   BEGIN
     SELECT @nullcnt = 0
     SELECT @validcnt = count(*)
       FROM inserted,CUST
         WHERE
           /* %JoinFKPK(inserted,CUST) */
-          inserted.customer_number = CUST.customer_number
+          inserted.CUST_number = CUST.CUST_number
     /* %NotnullFK(inserted," IS NULL","select @nullcnt = count(*) from inserted where"," AND") */
     
     IF @validcnt + @nullcnt != @numrows
@@ -1123,10 +1123,10 @@ BEGIN
   /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="MOVIE_COPY"
     CHILD_OWNER="", CHILD_TABLE="MO_RENT_REC"
     P2C_VERB_PHRASE="is rented under", C2P_VERB_PHRASE="records rental of a", 
-    FK_CONSTRAINT="is_rented_under", FK_COLUMNS="movie_copy_number""movie_number" */
+    FK_CONSTRAINT="is_rented_under", FK_COLUMNS="mo_co_num""movie_number" */
   IF
     /* %ChildFK(" OR",UPDATE) */
-    UPDATE(movie_copy_number) OR
+    UPDATE(mo_co_num) OR
     UPDATE(movie_number)
   BEGIN
     SELECT @nullcnt = 0
@@ -1134,7 +1134,7 @@ BEGIN
       FROM inserted,MOVIE_COPY
         WHERE
           /* %JoinFKPK(inserted,MOVIE_COPY) */
-          inserted.movie_copy_number = MOVIE_COPY.movie_copy_number and
+          inserted.mo_co_num = MOVIE_COPY.mo_co_num and
           inserted.movie_number = MOVIE_COPY.movie_number
     /* %NotnullFK(inserted," IS NULL","select @nullcnt = count(*) from inserted where"," AND") */
     
@@ -1331,15 +1331,15 @@ BEGIN
            @errmsg  varchar(255)
     /* erwin Builtin Trigger */
     /* MOVIE_COPY is rented under MO_RENT_REC on parent delete no action */
-    /* ERWIN_RELATION:CHECKSUM="0002998f", PARENT_OWNER="", PARENT_TABLE="MOVIE_COPY"
+    /* ERWIN_RELATION:CHECKSUM="00028730", PARENT_OWNER="", PARENT_TABLE="MOVIE_COPY"
     CHILD_OWNER="", CHILD_TABLE="MO_RENT_REC"
     P2C_VERB_PHRASE="is rented under", C2P_VERB_PHRASE="records rental of a", 
-    FK_CONSTRAINT="is_rented_under", FK_COLUMNS="movie_copy_number""movie_number" */
+    FK_CONSTRAINT="is_rented_under", FK_COLUMNS="mo_co_num""movie_number" */
     IF EXISTS (
       SELECT * FROM deleted,MO_RENT_REC
       WHERE
         /*  %JoinFKPK(MO_RENT_REC,deleted," = "," AND") */
-        MO_RENT_REC.movie_copy_number = deleted.movie_copy_number AND
+        MO_RENT_REC.mo_co_num = deleted.mo_co_num AND
         MO_RENT_REC.movie_number = deleted.movie_number
     )
     BEGIN
@@ -1391,7 +1391,7 @@ BEGIN
   DECLARE  @numrows int,
            @nullcnt int,
            @validcnt int,
-           @insmovie_copy_number integer, 
+           @insmo_co_num integer, 
            @insmovie_number integer,
            @errno   int,
            @severity int,
@@ -1401,20 +1401,20 @@ BEGIN
   SELECT @numrows = @@rowcount
   /* erwin Builtin Trigger */
   /* MOVIE_COPY is rented under MO_RENT_REC on parent update no action */
-  /* ERWIN_RELATION:CHECKSUM="0002cdea", PARENT_OWNER="", PARENT_TABLE="MOVIE_COPY"
+  /* ERWIN_RELATION:CHECKSUM="0002c26a", PARENT_OWNER="", PARENT_TABLE="MOVIE_COPY"
     CHILD_OWNER="", CHILD_TABLE="MO_RENT_REC"
     P2C_VERB_PHRASE="is rented under", C2P_VERB_PHRASE="records rental of a", 
-    FK_CONSTRAINT="is_rented_under", FK_COLUMNS="movie_copy_number""movie_number" */
+    FK_CONSTRAINT="is_rented_under", FK_COLUMNS="mo_co_num""movie_number" */
   IF
     /* %ParentPK(" OR",UPDATE) */
-    UPDATE(movie_copy_number) OR
+    UPDATE(mo_co_num) OR
     UPDATE(movie_number)
   BEGIN
     IF EXISTS (
       SELECT * FROM deleted,MO_RENT_REC
       WHERE
         /*  %JoinFKPK(MO_RENT_REC,deleted," = "," AND") */
-        MO_RENT_REC.movie_copy_number = deleted.movie_copy_number AND
+        MO_RENT_REC.mo_co_num = deleted.mo_co_num AND
         MO_RENT_REC.movie_number = deleted.movie_number
     )
     BEGIN
@@ -1624,7 +1624,7 @@ BEGIN
            @errmsg  varchar(255)
     /* erwin Builtin Trigger */
     /* PAYMENT is made on MO_RENT_REC on parent delete no action */
-    /* ERWIN_RELATION:CHECKSUM="0004c9f3", PARENT_OWNER="", PARENT_TABLE="PAYMENT"
+    /* ERWIN_RELATION:CHECKSUM="0004aeff", PARENT_OWNER="", PARENT_TABLE="PAYMENT"
     CHILD_OWNER="", CHILD_TABLE="MO_RENT_REC"
     P2C_VERB_PHRASE="is made on", C2P_VERB_PHRASE="requires", 
     FK_CONSTRAINT="is_made_on", FK_COLUMNS="payment_transaction_number" */
@@ -1645,16 +1645,16 @@ BEGIN
     /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="CUST_CREDIT"
     CHILD_OWNER="", CHILD_TABLE="PAYMENT"
     P2C_VERB_PHRASE="makes", C2P_VERB_PHRASE="is made by", 
-    FK_CONSTRAINT="R_7_2", FK_COLUMNS="customer_number" */
+    FK_CONSTRAINT="R_7_2", FK_COLUMNS="CUST_number" */
     IF EXISTS (SELECT * FROM deleted,CUST_CREDIT
       WHERE
         /* %JoinFKPK(deleted,CUST_CREDIT," = "," AND") */
-        deleted.customer_number = CUST_CREDIT.customer_number AND
+        deleted.CUST_number = CUST_CREDIT.CUST_number AND
         NOT EXISTS (
           SELECT * FROM PAYMENT
           WHERE
             /* %JoinFKPK(PAYMENT,CUST_CREDIT," = "," AND") */
-            PAYMENT.customer_number = CUST_CREDIT.customer_number
+            PAYMENT.CUST_number = CUST_CREDIT.CUST_number
         )
     )
     BEGIN
@@ -1672,12 +1672,12 @@ BEGIN
     IF EXISTS (SELECT * FROM deleted,CUST
       WHERE
         /* %JoinFKPK(deleted,CUST," = "," AND") */
-        deleted.customer_no = CUST.customer_number AND
+        deleted.customer_no = CUST.CUST_number AND
         NOT EXISTS (
           SELECT * FROM PAYMENT
           WHERE
             /* %JoinFKPK(PAYMENT,CUST," = "," AND") */
-            PAYMENT.customer_no = CUST.customer_number
+            PAYMENT.customer_no = CUST.CUST_number
         )
     )
     BEGIN
@@ -1691,16 +1691,16 @@ BEGIN
     /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="EMP"
     CHILD_OWNER="", CHILD_TABLE="PAYMENT"
     P2C_VERB_PHRASE="receives", C2P_VERB_PHRASE="is received by", 
-    FK_CONSTRAINT="receives", FK_COLUMNS="employee_number" */
+    FK_CONSTRAINT="receives", FK_COLUMNS="EMP_number" */
     IF EXISTS (SELECT * FROM deleted,EMP
       WHERE
         /* %JoinFKPK(deleted,EMP," = "," AND") */
-        deleted.employee_number = EMP.employee_number AND
+        deleted.EMP_number = EMP.EMP_number AND
         NOT EXISTS (
           SELECT * FROM PAYMENT
           WHERE
             /* %JoinFKPK(PAYMENT,EMP," = "," AND") */
-            PAYMENT.employee_number = EMP.employee_number
+            PAYMENT.EMP_number = EMP.EMP_number
         )
     )
     BEGIN
@@ -1738,7 +1738,7 @@ BEGIN
   SELECT @numrows = @@rowcount
   /* erwin Builtin Trigger */
   /* PAYMENT is made on MO_RENT_REC on parent update no action */
-  /* ERWIN_RELATION:CHECKSUM="0005b815", PARENT_OWNER="", PARENT_TABLE="PAYMENT"
+  /* ERWIN_RELATION:CHECKSUM="0005bedd", PARENT_OWNER="", PARENT_TABLE="PAYMENT"
     CHILD_OWNER="", CHILD_TABLE="MO_RENT_REC"
     P2C_VERB_PHRASE="is made on", C2P_VERB_PHRASE="requires", 
     FK_CONSTRAINT="is_made_on", FK_COLUMNS="payment_transaction_number" */
@@ -1764,20 +1764,20 @@ BEGIN
   /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="CUST_CREDIT"
     CHILD_OWNER="", CHILD_TABLE="PAYMENT"
     P2C_VERB_PHRASE="makes", C2P_VERB_PHRASE="is made by", 
-    FK_CONSTRAINT="R_7_2", FK_COLUMNS="customer_number" */
+    FK_CONSTRAINT="R_7_2", FK_COLUMNS="CUST_number" */
   IF
     /* %ChildFK(" OR",UPDATE) */
-    UPDATE(customer_number)
+    UPDATE(CUST_number)
   BEGIN
     SELECT @nullcnt = 0
     SELECT @validcnt = count(*)
       FROM inserted,CUST_CREDIT
         WHERE
           /* %JoinFKPK(inserted,CUST_CREDIT) */
-          inserted.customer_number = CUST_CREDIT.customer_number
+          inserted.CUST_number = CUST_CREDIT.CUST_number
     /* %NotnullFK(inserted," IS NULL","select @nullcnt = count(*) from inserted where"," AND") */
     select @nullcnt = count(*) from inserted where
-      inserted.customer_number IS NULL
+      inserted.CUST_number IS NULL
     IF @validcnt + @nullcnt != @numrows
     BEGIN
       SELECT @errno  = 30007,
@@ -1801,7 +1801,7 @@ BEGIN
       FROM inserted,CUST
         WHERE
           /* %JoinFKPK(inserted,CUST) */
-          inserted.customer_no = CUST.customer_number
+          inserted.customer_no = CUST.CUST_number
     /* %NotnullFK(inserted," IS NULL","select @nullcnt = count(*) from inserted where"," AND") */
     select @nullcnt = count(*) from inserted where
       inserted.customer_no IS NULL
@@ -1818,20 +1818,20 @@ BEGIN
   /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="EMP"
     CHILD_OWNER="", CHILD_TABLE="PAYMENT"
     P2C_VERB_PHRASE="receives", C2P_VERB_PHRASE="is received by", 
-    FK_CONSTRAINT="receives", FK_COLUMNS="employee_number" */
+    FK_CONSTRAINT="receives", FK_COLUMNS="EMP_number" */
   IF
     /* %ChildFK(" OR",UPDATE) */
-    UPDATE(employee_number)
+    UPDATE(EMP_number)
   BEGIN
     SELECT @nullcnt = 0
     SELECT @validcnt = count(*)
       FROM inserted,EMP
         WHERE
           /* %JoinFKPK(inserted,EMP) */
-          inserted.employee_number = EMP.employee_number
+          inserted.EMP_number = EMP.EMP_number
     /* %NotnullFK(inserted," IS NULL","select @nullcnt = count(*) from inserted where"," AND") */
     select @nullcnt = count(*) from inserted where
-      inserted.employee_number IS NULL
+      inserted.EMP_number IS NULL
     IF @validcnt + @nullcnt != @numrows
     BEGIN
       SELECT @errno  = 30007,
