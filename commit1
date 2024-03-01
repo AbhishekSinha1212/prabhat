@@ -1,0 +1,568 @@
+
+CREATE TABLE [step;dog]
+( 
+	[step_sis]           char(18)  NOT NULL ,
+	[step_big_bro]       char(18)  NULL ,
+	[e__]                char(18)  NOT NULL ,
+	[R#]                 char(18)  NOT NULL ,
+	[R_]                 char(18)  NOT NULL 
+)
+go
+
+CREATE TABLE [step_cat]
+( 
+	[e__]                char(18)  NOT NULL ,
+	[e_6]                char(18)  NULL ,
+	[R#]                 char(18)  NOT NULL ,
+	[R_]                 char(18)  NOT NULL 
+)
+go
+
+CREATE TABLE [step_dad]
+( 
+	[R#]                 char(18)  NOT NULL ,
+	[$]                  char(18)  NULL ,
+	[R_]                 char(18)  NOT NULL 
+)
+go
+
+CREATE TABLE [step_mom]
+( 
+	[R_]                 char(18)  NOT NULL ,
+	[R@]                 char(18)  NULL 
+)
+go
+
+ALTER TABLE [step;dog]
+	ADD CONSTRAINT [XPKstep;dog] PRIMARY KEY  CLUSTERED ([step_sis] ASC,[e__] ASC,[R#] ASC,[R_] ASC)
+go
+
+ALTER TABLE [step_cat]
+	ADD CONSTRAINT [XPKstep_cat] PRIMARY KEY  CLUSTERED ([e__] ASC,[R#] ASC,[R_] ASC)
+go
+
+ALTER TABLE [step_dad]
+	ADD CONSTRAINT [XPKstep_dad] PRIMARY KEY  CLUSTERED ([R#] ASC,[R_] ASC)
+go
+
+ALTER TABLE [step_mom]
+	ADD CONSTRAINT [XPKstep_mom] PRIMARY KEY  CLUSTERED ([R_] ASC)
+go
+
+
+ALTER TABLE [step;dog]
+	ADD CONSTRAINT [R_3] FOREIGN KEY ([e__],[R#],[R_]) REFERENCES [step_cat]([e__],[R#],[R_])
+		ON DELETE NO ACTION
+		ON UPDATE NO ACTION
+go
+
+
+ALTER TABLE [step_cat]
+	ADD CONSTRAINT [R_2] FOREIGN KEY ([R#],[R_]) REFERENCES [step_dad]([R#],[R_])
+		ON DELETE NO ACTION
+		ON UPDATE NO ACTION
+go
+
+
+ALTER TABLE [step_dad]
+	ADD CONSTRAINT [R_1] FOREIGN KEY ([R_]) REFERENCES [step_mom]([R_])
+		ON DELETE NO ACTION
+		ON UPDATE NO ACTION
+go
+
+
+CREATE TRIGGER tD_step;dog ON step;dog FOR DELETE AS
+/* erwin Builtin Trigger */
+/* DELETE trigger on step;dog */
+BEGIN
+  DECLARE  @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+    /* erwin Builtin Trigger */
+    /* step_cat  step;dog on child delete no action */
+    /* ERWIN_RELATION:CHECKSUM="000174b7", PARENT_OWNER="", PARENT_TABLE="step_cat"
+    CHILD_OWNER="", CHILD_TABLE="step;dog"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_3", FK_COLUMNS="e__""R#""R_" */
+    IF EXISTS (SELECT * FROM deleted,step_cat
+      WHERE
+        /* %JoinFKPK(deleted,step_cat," = "," AND") */
+        deleted.e__ = step_cat.e__ AND
+        deleted.R# = step_cat.R# AND
+        deleted.R_ = step_cat.R_ AND
+        NOT EXISTS (
+          SELECT * FROM step;dog
+          WHERE
+            /* %JoinFKPK(step;dog,step_cat," = "," AND") */
+            step;dog.e__ = step_cat.e__ AND
+            step;dog.R# = step_cat.R# AND
+            step;dog.R_ = step_cat.R_
+        )
+    )
+    BEGIN
+      SELECT @errno  = 30010,
+             @errmsg = 'Cannot delete last step;dog because step_cat exists.'
+      GOTO error
+    END
+
+
+    /* erwin Builtin Trigger */
+    RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
+CREATE TRIGGER tU_step;dog ON step;dog FOR UPDATE AS
+/* erwin Builtin Trigger */
+/* UPDATE trigger on step;dog */
+BEGIN
+  DECLARE  @numrows int,
+           @nullcnt int,
+           @validcnt int,
+           @insstep_sis char(18), 
+           @inse__ char(18), 
+           @insR# char(18), 
+           @insR_ char(18),
+           @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+
+  SELECT @numrows = @@rowcount
+  /* erwin Builtin Trigger */
+  /* step_cat  step;dog on child update no action */
+  /* ERWIN_RELATION:CHECKSUM="00018a2d", PARENT_OWNER="", PARENT_TABLE="step_cat"
+    CHILD_OWNER="", CHILD_TABLE="step;dog"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_3", FK_COLUMNS="e__""R#""R_" */
+  IF
+    /* %ChildFK(" OR",UPDATE) */
+    UPDATE(e__) OR
+    UPDATE(R#) OR
+    UPDATE(R_)
+  BEGIN
+    SELECT @nullcnt = 0
+    SELECT @validcnt = count(*)
+      FROM inserted,step_cat
+        WHERE
+          /* %JoinFKPK(inserted,step_cat) */
+          inserted.e__ = step_cat.e__ and
+          inserted.R# = step_cat.R# and
+          inserted.R_ = step_cat.R_
+    /* %NotnullFK(inserted," IS NULL","select @nullcnt = count(*) from inserted where"," AND") */
+    
+    IF @validcnt + @nullcnt != @numrows
+    BEGIN
+      SELECT @errno  = 30007,
+             @errmsg = 'Cannot update step;dog because step_cat does not exist.'
+      GOTO error
+    END
+  END
+
+
+  /* erwin Builtin Trigger */
+  RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
+
+
+CREATE TRIGGER tD_step_cat ON step_cat FOR DELETE AS
+/* erwin Builtin Trigger */
+/* DELETE trigger on step_cat */
+BEGIN
+  DECLARE  @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+    /* erwin Builtin Trigger */
+    /* step_cat  step;dog on parent delete no action */
+    /* ERWIN_RELATION:CHECKSUM="00024768", PARENT_OWNER="", PARENT_TABLE="step_cat"
+    CHILD_OWNER="", CHILD_TABLE="step;dog"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_3", FK_COLUMNS="e__""R#""R_" */
+    IF EXISTS (
+      SELECT * FROM deleted,step;dog
+      WHERE
+        /*  %JoinFKPK(step;dog,deleted," = "," AND") */
+        step;dog.e__ = deleted.e__ AND
+        step;dog.R# = deleted.R# AND
+        step;dog.R_ = deleted.R_
+    )
+    BEGIN
+      SELECT @errno  = 30001,
+             @errmsg = 'Cannot delete step_cat because step;dog exists.'
+      GOTO error
+    END
+
+    /* erwin Builtin Trigger */
+    /* step_dad  step_cat on child delete no action */
+    /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="step_dad"
+    CHILD_OWNER="", CHILD_TABLE="step_cat"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_2", FK_COLUMNS="R#""R_" */
+    IF EXISTS (SELECT * FROM deleted,step_dad
+      WHERE
+        /* %JoinFKPK(deleted,step_dad," = "," AND") */
+        deleted.R# = step_dad.R# AND
+        deleted.R_ = step_dad.R_ AND
+        NOT EXISTS (
+          SELECT * FROM step_cat
+          WHERE
+            /* %JoinFKPK(step_cat,step_dad," = "," AND") */
+            step_cat.R# = step_dad.R# AND
+            step_cat.R_ = step_dad.R_
+        )
+    )
+    BEGIN
+      SELECT @errno  = 30010,
+             @errmsg = 'Cannot delete last step_cat because step_dad exists.'
+      GOTO error
+    END
+
+
+    /* erwin Builtin Trigger */
+    RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
+CREATE TRIGGER tU_step_cat ON step_cat FOR UPDATE AS
+/* erwin Builtin Trigger */
+/* UPDATE trigger on step_cat */
+BEGIN
+  DECLARE  @numrows int,
+           @nullcnt int,
+           @validcnt int,
+           @inse__ char(18), 
+           @insR# char(18), 
+           @insR_ char(18),
+           @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+
+  SELECT @numrows = @@rowcount
+  /* erwin Builtin Trigger */
+  /* step_cat  step;dog on parent update no action */
+  /* ERWIN_RELATION:CHECKSUM="00028aef", PARENT_OWNER="", PARENT_TABLE="step_cat"
+    CHILD_OWNER="", CHILD_TABLE="step;dog"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_3", FK_COLUMNS="e__""R#""R_" */
+  IF
+    /* %ParentPK(" OR",UPDATE) */
+    UPDATE(e__) OR
+    UPDATE(R#) OR
+    UPDATE(R_)
+  BEGIN
+    IF EXISTS (
+      SELECT * FROM deleted,step;dog
+      WHERE
+        /*  %JoinFKPK(step;dog,deleted," = "," AND") */
+        step;dog.e__ = deleted.e__ AND
+        step;dog.R# = deleted.R# AND
+        step;dog.R_ = deleted.R_
+    )
+    BEGIN
+      SELECT @errno  = 30005,
+             @errmsg = 'Cannot update step_cat because step;dog exists.'
+      GOTO error
+    END
+  END
+
+  /* erwin Builtin Trigger */
+  /* step_dad  step_cat on child update no action */
+  /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="step_dad"
+    CHILD_OWNER="", CHILD_TABLE="step_cat"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_2", FK_COLUMNS="R#""R_" */
+  IF
+    /* %ChildFK(" OR",UPDATE) */
+    UPDATE(R#) OR
+    UPDATE(R_)
+  BEGIN
+    SELECT @nullcnt = 0
+    SELECT @validcnt = count(*)
+      FROM inserted,step_dad
+        WHERE
+          /* %JoinFKPK(inserted,step_dad) */
+          inserted.R# = step_dad.R# and
+          inserted.R_ = step_dad.R_
+    /* %NotnullFK(inserted," IS NULL","select @nullcnt = count(*) from inserted where"," AND") */
+    
+    IF @validcnt + @nullcnt != @numrows
+    BEGIN
+      SELECT @errno  = 30007,
+             @errmsg = 'Cannot update step_cat because step_dad does not exist.'
+      GOTO error
+    END
+  END
+
+
+  /* erwin Builtin Trigger */
+  RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
+
+
+CREATE TRIGGER tD_step_dad ON step_dad FOR DELETE AS
+/* erwin Builtin Trigger */
+/* DELETE trigger on step_dad */
+BEGIN
+  DECLARE  @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+    /* erwin Builtin Trigger */
+    /* step_dad  step_cat on parent delete no action */
+    /* ERWIN_RELATION:CHECKSUM="00022e4a", PARENT_OWNER="", PARENT_TABLE="step_dad"
+    CHILD_OWNER="", CHILD_TABLE="step_cat"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_2", FK_COLUMNS="R#""R_" */
+    IF EXISTS (
+      SELECT * FROM deleted,step_cat
+      WHERE
+        /*  %JoinFKPK(step_cat,deleted," = "," AND") */
+        step_cat.R# = deleted.R# AND
+        step_cat.R_ = deleted.R_
+    )
+    BEGIN
+      SELECT @errno  = 30001,
+             @errmsg = 'Cannot delete step_dad because step_cat exists.'
+      GOTO error
+    END
+
+    /* erwin Builtin Trigger */
+    /* step_mom  step_dad on child delete no action */
+    /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="step_mom"
+    CHILD_OWNER="", CHILD_TABLE="step_dad"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_1", FK_COLUMNS="R_" */
+    IF EXISTS (SELECT * FROM deleted,step_mom
+      WHERE
+        /* %JoinFKPK(deleted,step_mom," = "," AND") */
+        deleted.R_ = step_mom.R_ AND
+        NOT EXISTS (
+          SELECT * FROM step_dad
+          WHERE
+            /* %JoinFKPK(step_dad,step_mom," = "," AND") */
+            step_dad.R_ = step_mom.R_
+        )
+    )
+    BEGIN
+      SELECT @errno  = 30010,
+             @errmsg = 'Cannot delete last step_dad because step_mom exists.'
+      GOTO error
+    END
+
+
+    /* erwin Builtin Trigger */
+    RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
+CREATE TRIGGER tU_step_dad ON step_dad FOR UPDATE AS
+/* erwin Builtin Trigger */
+/* UPDATE trigger on step_dad */
+BEGIN
+  DECLARE  @numrows int,
+           @nullcnt int,
+           @validcnt int,
+           @insR# char(18), 
+           @insR_ char(18),
+           @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+
+  SELECT @numrows = @@rowcount
+  /* erwin Builtin Trigger */
+  /* step_dad  step_cat on parent update no action */
+  /* ERWIN_RELATION:CHECKSUM="00025b4d", PARENT_OWNER="", PARENT_TABLE="step_dad"
+    CHILD_OWNER="", CHILD_TABLE="step_cat"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_2", FK_COLUMNS="R#""R_" */
+  IF
+    /* %ParentPK(" OR",UPDATE) */
+    UPDATE(R#) OR
+    UPDATE(R_)
+  BEGIN
+    IF EXISTS (
+      SELECT * FROM deleted,step_cat
+      WHERE
+        /*  %JoinFKPK(step_cat,deleted," = "," AND") */
+        step_cat.R# = deleted.R# AND
+        step_cat.R_ = deleted.R_
+    )
+    BEGIN
+      SELECT @errno  = 30005,
+             @errmsg = 'Cannot update step_dad because step_cat exists.'
+      GOTO error
+    END
+  END
+
+  /* erwin Builtin Trigger */
+  /* step_mom  step_dad on child update no action */
+  /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="step_mom"
+    CHILD_OWNER="", CHILD_TABLE="step_dad"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_1", FK_COLUMNS="R_" */
+  IF
+    /* %ChildFK(" OR",UPDATE) */
+    UPDATE(R_)
+  BEGIN
+    SELECT @nullcnt = 0
+    SELECT @validcnt = count(*)
+      FROM inserted,step_mom
+        WHERE
+          /* %JoinFKPK(inserted,step_mom) */
+          inserted.R_ = step_mom.R_
+    /* %NotnullFK(inserted," IS NULL","select @nullcnt = count(*) from inserted where"," AND") */
+    
+    IF @validcnt + @nullcnt != @numrows
+    BEGIN
+      SELECT @errno  = 30007,
+             @errmsg = 'Cannot update step_dad because step_mom does not exist.'
+      GOTO error
+    END
+  END
+
+
+  /* erwin Builtin Trigger */
+  RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
+
+
+CREATE TRIGGER tD_step_mom ON step_mom FOR DELETE AS
+/* erwin Builtin Trigger */
+/* DELETE trigger on step_mom */
+BEGIN
+  DECLARE  @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+    /* erwin Builtin Trigger */
+    /* step_mom  step_dad on parent delete no action */
+    /* ERWIN_RELATION:CHECKSUM="00010186", PARENT_OWNER="", PARENT_TABLE="step_mom"
+    CHILD_OWNER="", CHILD_TABLE="step_dad"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_1", FK_COLUMNS="R_" */
+    IF EXISTS (
+      SELECT * FROM deleted,step_dad
+      WHERE
+        /*  %JoinFKPK(step_dad,deleted," = "," AND") */
+        step_dad.R_ = deleted.R_
+    )
+    BEGIN
+      SELECT @errno  = 30001,
+             @errmsg = 'Cannot delete step_mom because step_dad exists.'
+      GOTO error
+    END
+
+
+    /* erwin Builtin Trigger */
+    RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
+CREATE TRIGGER tU_step_mom ON step_mom FOR UPDATE AS
+/* erwin Builtin Trigger */
+/* UPDATE trigger on step_mom */
+BEGIN
+  DECLARE  @numrows int,
+           @nullcnt int,
+           @validcnt int,
+           @insR_ char(18),
+           @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+
+  SELECT @numrows = @@rowcount
+  /* erwin Builtin Trigger */
+  /* step_mom  step_dad on parent update no action */
+  /* ERWIN_RELATION:CHECKSUM="00011036", PARENT_OWNER="", PARENT_TABLE="step_mom"
+    CHILD_OWNER="", CHILD_TABLE="step_dad"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_1", FK_COLUMNS="R_" */
+  IF
+    /* %ParentPK(" OR",UPDATE) */
+    UPDATE(R_)
+  BEGIN
+    IF EXISTS (
+      SELECT * FROM deleted,step_dad
+      WHERE
+        /*  %JoinFKPK(step_dad,deleted," = "," AND") */
+        step_dad.R_ = deleted.R_
+    )
+    BEGIN
+      SELECT @errno  = 30005,
+             @errmsg = 'Cannot update step_mom because step_dad exists.'
+      GOTO error
+    END
+  END
+
+
+  /* erwin Builtin Trigger */
+  RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
