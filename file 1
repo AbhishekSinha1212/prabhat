@@ -1973,3 +1973,491 @@ END
 go
 
 
+
+
+ALTER TABLE [PAYMENT]
+DROP CONSTRAINT [receives]
+go
+
+ALTER TABLE [PAYMENT]
+DROP CONSTRAINT [R_7_1]
+go
+
+ALTER TABLE [PAYMENT]
+DROP CONSTRAINT [R_7_2]
+go
+
+ALTER TABLE [MOVIE_RENTAL_RECORD]
+DROP CONSTRAINT [is_made_on]
+go
+
+ALTER TABLE [PAYMENT]
+DROP CONSTRAINT [XPKPAYMENT]
+go
+
+execute sp_rename '[PAYMENT]', 'PAYMENT831I3102000'
+go
+
+ALTER TABLE [MOVIE_RENTAL_RECORD]
+ADD [cfc]  char(18)  NULL
+go
+
+CREATE TABLE [E_10]
+( 
+	[cfc]                char(18)  NOT NULL ,
+	[xcf]                char(18)  NULL 
+)
+go
+
+CREATE TABLE [PAYMENT]
+( 
+	[payment_transaction_number] integer  NOT NULL ,
+	[payment_type]       char(18)  NULL ,
+	[payment_amount]     numeric  NULL ,
+	[payment_date]       datetime  NULL ,
+	[payment_status]     varchar(1)  NULL ,
+	[employee_number]    varchar(20)  NOT NULL ,
+	[customer_number]    integer  NULL ,
+	[customer_no]        integer  NULL ,
+	[check_bank_number]  integer  NULL ,
+	[check_number]       integer  NULL ,
+	[epay_vendor_number] integer  NULL ,
+	[epay_account_number] integer  NULL ,
+	[credit_card_number] char(18)  NULL ,
+	[credit_card_exp]    datetime  NULL ,
+	[credit_card_type]   char(18)  NULL ,
+	[cfc]                char(18)  NOT NULL 
+)
+go
+
+ALTER TABLE [E_10]
+ADD CONSTRAINT [XPKE_10] PRIMARY KEY  CLUSTERED ([cfc] ASC)
+go
+
+ALTER TABLE [PAYMENT]
+ADD CONSTRAINT [XPKPAYMENT] PRIMARY KEY  CLUSTERED ([payment_transaction_number] ASC,[cfc] ASC)
+go
+
+
+INSERT INTO [PAYMENT] ([payment_transaction_number], [payment_type], [customer_number], [customer_no], [payment_amount], [payment_date], [payment_status], [employee_number], [check_bank_number], [check_number], [epay_vendor_number], [epay_account_number], [credit_card_number], [credit_card_exp], [credit_card_type]) SELECT [payment_transaction_number], [payment_type], [customer_number], [customer_no], CONVERT(numeric,payment_amount), [payment_date], [payment_status], [employee_number], [check_bank_number], [check_number], [epay_vendor_number], [epay_account_number], [credit_card_number], [credit_card_exp], [credit_card_type] FROM PAYMENT831I3102000
+
+go
+
+ALTER TABLE [PAYMENT]
+	ADD CONSTRAINT [receives] FOREIGN KEY ([employee_number]) REFERENCES [EMPLOYEE]([employee_number])
+		ON DELETE NO ACTION
+		ON UPDATE NO ACTION
+go
+
+ALTER TABLE [PAYMENT]
+	ADD CONSTRAINT [R_7_1] FOREIGN KEY ([customer_no]) REFERENCES [CUSTOMER]([customer_number])
+		ON DELETE NO ACTION
+		ON UPDATE NO ACTION
+go
+
+ALTER TABLE [PAYMENT]
+	ADD CONSTRAINT [R_7_2] FOREIGN KEY ([customer_number]) REFERENCES [CUSTOMER_CREDIT]([customer_number])
+		ON DELETE NO ACTION
+		ON UPDATE NO ACTION
+go
+
+ALTER TABLE [PAYMENT]
+	ADD CONSTRAINT [R_14] FOREIGN KEY ([cfc]) REFERENCES [E_10]([cfc])
+		ON DELETE NO ACTION
+		ON UPDATE NO ACTION
+go
+
+ALTER TABLE [MOVIE_RENTAL_RECORD]
+	ADD CONSTRAINT [is_made_on] FOREIGN KEY ([payment_transaction_number],[cfc]) REFERENCES [PAYMENT]([payment_transaction_number],[cfc])
+		ON DELETE NO ACTION
+		ON UPDATE NO ACTION
+go
+
+
+CREATE TRIGGER tD_E_10 ON E_10 FOR DELETE AS
+/* erwin Builtin Trigger */
+/* DELETE trigger on E_10 */
+BEGIN
+  DECLARE  @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+    /* erwin Builtin Trigger */
+    /* E_10  PAYMENT on parent delete no action */
+    /* ERWIN_RELATION:CHECKSUM="0000f702", PARENT_OWNER="", PARENT_TABLE="E_10"
+    CHILD_OWNER="", CHILD_TABLE="PAYMENT"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_14", FK_COLUMNS="cfc" */
+    IF EXISTS (
+      SELECT * FROM deleted,PAYMENT
+      WHERE
+        /*  %JoinFKPK(PAYMENT,deleted," = "," AND") */
+        PAYMENT.cfc = deleted.cfc
+    )
+    BEGIN
+      SELECT @errno  = 30001,
+             @errmsg = 'Cannot delete E_10 because PAYMENT exists.'
+      GOTO error
+    END
+
+
+    /* erwin Builtin Trigger */
+    RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
+CREATE TRIGGER tU_E_10 ON E_10 FOR UPDATE AS
+/* erwin Builtin Trigger */
+/* UPDATE trigger on E_10 */
+BEGIN
+  DECLARE  @numrows int,
+           @nullcnt int,
+           @validcnt int,
+           @inscfc char(18),
+           @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+
+  SELECT @numrows = @@rowcount
+  /* erwin Builtin Trigger */
+  /* E_10  PAYMENT on parent update no action */
+  /* ERWIN_RELATION:CHECKSUM="00010f98", PARENT_OWNER="", PARENT_TABLE="E_10"
+    CHILD_OWNER="", CHILD_TABLE="PAYMENT"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_14", FK_COLUMNS="cfc" */
+  IF
+    /* %ParentPK(" OR",UPDATE) */
+    UPDATE(cfc)
+  BEGIN
+    IF EXISTS (
+      SELECT * FROM deleted,PAYMENT
+      WHERE
+        /*  %JoinFKPK(PAYMENT,deleted," = "," AND") */
+        PAYMENT.cfc = deleted.cfc
+    )
+    BEGIN
+      SELECT @errno  = 30005,
+             @errmsg = 'Cannot update E_10 because PAYMENT exists.'
+      GOTO error
+    END
+  END
+
+
+  /* erwin Builtin Trigger */
+  RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
+
+
+CREATE TRIGGER tD_PAYMENT ON PAYMENT FOR DELETE AS
+/* erwin Builtin Trigger */
+/* DELETE trigger on PAYMENT */
+BEGIN
+  DECLARE  @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+    /* erwin Builtin Trigger */
+    /* PAYMENT is made on MOVIE_RENTAL_RECORD on parent delete no action */
+    /* ERWIN_RELATION:CHECKSUM="00062017", PARENT_OWNER="", PARENT_TABLE="PAYMENT"
+    CHILD_OWNER="", CHILD_TABLE="MOVIE_RENTAL_RECORD"
+    P2C_VERB_PHRASE="is made on", C2P_VERB_PHRASE="requires", 
+    FK_CONSTRAINT="is_made_on", FK_COLUMNS="payment_transaction_number""cfc" */
+    IF EXISTS (
+      SELECT * FROM deleted,MOVIE_RENTAL_RECORD
+      WHERE
+        /*  %JoinFKPK(MOVIE_RENTAL_RECORD,deleted," = "," AND") */
+        MOVIE_RENTAL_RECORD.payment_transaction_number = deleted.payment_transaction_number AND
+        MOVIE_RENTAL_RECORD.cfc = deleted.cfc
+    )
+    BEGIN
+      SELECT @errno  = 30001,
+             @errmsg = 'Cannot delete PAYMENT because MOVIE_RENTAL_RECORD exists.'
+      GOTO error
+    END
+
+    /* erwin Builtin Trigger */
+    /* E_10  PAYMENT on child delete no action */
+    /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="E_10"
+    CHILD_OWNER="", CHILD_TABLE="PAYMENT"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_14", FK_COLUMNS="cfc" */
+    IF EXISTS (SELECT * FROM deleted,E_10
+      WHERE
+        /* %JoinFKPK(deleted,E_10," = "," AND") */
+        deleted.cfc = E_10.cfc AND
+        NOT EXISTS (
+          SELECT * FROM PAYMENT
+          WHERE
+            /* %JoinFKPK(PAYMENT,E_10," = "," AND") */
+            PAYMENT.cfc = E_10.cfc
+        )
+    )
+    BEGIN
+      SELECT @errno  = 30010,
+             @errmsg = 'Cannot delete last PAYMENT because E_10 exists.'
+      GOTO error
+    END
+
+    /* erwin Builtin Trigger */
+    /* CUSTOMER_CREDIT makes PAYMENT on child delete no action */
+    /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="CUSTOMER_CREDIT"
+    CHILD_OWNER="", CHILD_TABLE="PAYMENT"
+    P2C_VERB_PHRASE="makes", C2P_VERB_PHRASE="is made by", 
+    FK_CONSTRAINT="R_7_2", FK_COLUMNS="customer_number" */
+    IF EXISTS (SELECT * FROM deleted,CUSTOMER_CREDIT
+      WHERE
+        /* %JoinFKPK(deleted,CUSTOMER_CREDIT," = "," AND") */
+        deleted.customer_number = CUSTOMER_CREDIT.customer_number AND
+        NOT EXISTS (
+          SELECT * FROM PAYMENT
+          WHERE
+            /* %JoinFKPK(PAYMENT,CUSTOMER_CREDIT," = "," AND") */
+            PAYMENT.customer_number = CUSTOMER_CREDIT.customer_number
+        )
+    )
+    BEGIN
+      SELECT @errno  = 30010,
+             @errmsg = 'Cannot delete last PAYMENT because CUSTOMER_CREDIT exists.'
+      GOTO error
+    END
+
+    /* erwin Builtin Trigger */
+    /* CUSTOMER makes PAYMENT on child delete no action */
+    /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="CUSTOMER"
+    CHILD_OWNER="", CHILD_TABLE="PAYMENT"
+    P2C_VERB_PHRASE="makes", C2P_VERB_PHRASE="is made by", 
+    FK_CONSTRAINT="R_7_1", FK_COLUMNS="customer_no" */
+    IF EXISTS (SELECT * FROM deleted,CUSTOMER
+      WHERE
+        /* %JoinFKPK(deleted,CUSTOMER," = "," AND") */
+        deleted.customer_no = CUSTOMER.customer_number AND
+        NOT EXISTS (
+          SELECT * FROM PAYMENT
+          WHERE
+            /* %JoinFKPK(PAYMENT,CUSTOMER," = "," AND") */
+            PAYMENT.customer_no = CUSTOMER.customer_number
+        )
+    )
+    BEGIN
+      SELECT @errno  = 30010,
+             @errmsg = 'Cannot delete last PAYMENT because CUSTOMER exists.'
+      GOTO error
+    END
+
+    /* erwin Builtin Trigger */
+    /* EMPLOYEE receives PAYMENT on child delete no action */
+    /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="EMPLOYEE"
+    CHILD_OWNER="", CHILD_TABLE="PAYMENT"
+    P2C_VERB_PHRASE="receives", C2P_VERB_PHRASE="is received by", 
+    FK_CONSTRAINT="receives", FK_COLUMNS="employee_number" */
+    IF EXISTS (SELECT * FROM deleted,EMPLOYEE
+      WHERE
+        /* %JoinFKPK(deleted,EMPLOYEE," = "," AND") */
+        deleted.employee_number = EMPLOYEE.employee_number AND
+        NOT EXISTS (
+          SELECT * FROM PAYMENT
+          WHERE
+            /* %JoinFKPK(PAYMENT,EMPLOYEE," = "," AND") */
+            PAYMENT.employee_number = EMPLOYEE.employee_number
+        )
+    )
+    BEGIN
+      SELECT @errno  = 30010,
+             @errmsg = 'Cannot delete last PAYMENT because EMPLOYEE exists.'
+      GOTO error
+    END
+
+
+    /* erwin Builtin Trigger */
+    RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
+CREATE TRIGGER tU_PAYMENT ON PAYMENT FOR UPDATE AS
+/* erwin Builtin Trigger */
+/* UPDATE trigger on PAYMENT */
+BEGIN
+  DECLARE  @numrows int,
+           @nullcnt int,
+           @validcnt int,
+           @inspayment_transaction_number integer, 
+           @inscfc char(18),
+           @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+
+  SELECT @numrows = @@rowcount
+  /* erwin Builtin Trigger */
+  /* PAYMENT is made on MOVIE_RENTAL_RECORD on parent update no action */
+  /* ERWIN_RELATION:CHECKSUM="00073008", PARENT_OWNER="", PARENT_TABLE="PAYMENT"
+    CHILD_OWNER="", CHILD_TABLE="MOVIE_RENTAL_RECORD"
+    P2C_VERB_PHRASE="is made on", C2P_VERB_PHRASE="requires", 
+    FK_CONSTRAINT="is_made_on", FK_COLUMNS="payment_transaction_number""cfc" */
+  IF
+    /* %ParentPK(" OR",UPDATE) */
+    UPDATE(payment_transaction_number) OR
+    UPDATE(cfc)
+  BEGIN
+    IF EXISTS (
+      SELECT * FROM deleted,MOVIE_RENTAL_RECORD
+      WHERE
+        /*  %JoinFKPK(MOVIE_RENTAL_RECORD,deleted," = "," AND") */
+        MOVIE_RENTAL_RECORD.payment_transaction_number = deleted.payment_transaction_number AND
+        MOVIE_RENTAL_RECORD.cfc = deleted.cfc
+    )
+    BEGIN
+      SELECT @errno  = 30005,
+             @errmsg = 'Cannot update PAYMENT because MOVIE_RENTAL_RECORD exists.'
+      GOTO error
+    END
+  END
+
+  /* erwin Builtin Trigger */
+  /* E_10  PAYMENT on child update no action */
+  /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="E_10"
+    CHILD_OWNER="", CHILD_TABLE="PAYMENT"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_14", FK_COLUMNS="cfc" */
+  IF
+    /* %ChildFK(" OR",UPDATE) */
+    UPDATE(cfc)
+  BEGIN
+    SELECT @nullcnt = 0
+    SELECT @validcnt = count(*)
+      FROM inserted,E_10
+        WHERE
+          /* %JoinFKPK(inserted,E_10) */
+          inserted.cfc = E_10.cfc
+    /* %NotnullFK(inserted," IS NULL","select @nullcnt = count(*) from inserted where"," AND") */
+    
+    IF @validcnt + @nullcnt != @numrows
+    BEGIN
+      SELECT @errno  = 30007,
+             @errmsg = 'Cannot update PAYMENT because E_10 does not exist.'
+      GOTO error
+    END
+  END
+
+  /* erwin Builtin Trigger */
+  /* CUSTOMER_CREDIT makes PAYMENT on child update no action */
+  /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="CUSTOMER_CREDIT"
+    CHILD_OWNER="", CHILD_TABLE="PAYMENT"
+    P2C_VERB_PHRASE="makes", C2P_VERB_PHRASE="is made by", 
+    FK_CONSTRAINT="R_7_2", FK_COLUMNS="customer_number" */
+  IF
+    /* %ChildFK(" OR",UPDATE) */
+    UPDATE(customer_number)
+  BEGIN
+    SELECT @nullcnt = 0
+    SELECT @validcnt = count(*)
+      FROM inserted,CUSTOMER_CREDIT
+        WHERE
+          /* %JoinFKPK(inserted,CUSTOMER_CREDIT) */
+          inserted.customer_number = CUSTOMER_CREDIT.customer_number
+    /* %NotnullFK(inserted," IS NULL","select @nullcnt = count(*) from inserted where"," AND") */
+    select @nullcnt = count(*) from inserted where
+      inserted.customer_number IS NULL
+    IF @validcnt + @nullcnt != @numrows
+    BEGIN
+      SELECT @errno  = 30007,
+             @errmsg = 'Cannot update PAYMENT because CUSTOMER_CREDIT does not exist.'
+      GOTO error
+    END
+  END
+
+  /* erwin Builtin Trigger */
+  /* CUSTOMER makes PAYMENT on child update no action */
+  /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="CUSTOMER"
+    CHILD_OWNER="", CHILD_TABLE="PAYMENT"
+    P2C_VERB_PHRASE="makes", C2P_VERB_PHRASE="is made by", 
+    FK_CONSTRAINT="R_7_1", FK_COLUMNS="customer_no" */
+  IF
+    /* %ChildFK(" OR",UPDATE) */
+    UPDATE(customer_no)
+  BEGIN
+    SELECT @nullcnt = 0
+    SELECT @validcnt = count(*)
+      FROM inserted,CUSTOMER
+        WHERE
+          /* %JoinFKPK(inserted,CUSTOMER) */
+          inserted.customer_no = CUSTOMER.customer_number
+    /* %NotnullFK(inserted," IS NULL","select @nullcnt = count(*) from inserted where"," AND") */
+    select @nullcnt = count(*) from inserted where
+      inserted.customer_no IS NULL
+    IF @validcnt + @nullcnt != @numrows
+    BEGIN
+      SELECT @errno  = 30007,
+             @errmsg = 'Cannot update PAYMENT because CUSTOMER does not exist.'
+      GOTO error
+    END
+  END
+
+  /* erwin Builtin Trigger */
+  /* EMPLOYEE receives PAYMENT on child update no action */
+  /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="EMPLOYEE"
+    CHILD_OWNER="", CHILD_TABLE="PAYMENT"
+    P2C_VERB_PHRASE="receives", C2P_VERB_PHRASE="is received by", 
+    FK_CONSTRAINT="receives", FK_COLUMNS="employee_number" */
+  IF
+    /* %ChildFK(" OR",UPDATE) */
+    UPDATE(employee_number)
+  BEGIN
+    SELECT @nullcnt = 0
+    SELECT @validcnt = count(*)
+      FROM inserted,EMPLOYEE
+        WHERE
+          /* %JoinFKPK(inserted,EMPLOYEE) */
+          inserted.employee_number = EMPLOYEE.employee_number
+    /* %NotnullFK(inserted," IS NULL","select @nullcnt = count(*) from inserted where"," AND") */
+    select @nullcnt = count(*) from inserted where
+      inserted.employee_number IS NULL
+    IF @validcnt + @nullcnt != @numrows
+    BEGIN
+      SELECT @errno  = 30007,
+             @errmsg = 'Cannot update PAYMENT because EMPLOYEE does not exist.'
+      GOTO error
+    END
+  END
+
+
+  /* erwin Builtin Trigger */
+  RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
+
+
+DROP TABLE IF EXISTS PAYMENT831I3102000
+go
