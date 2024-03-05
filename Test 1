@@ -1985,3 +1985,237 @@ END
 go
 
 
+
+
+CREATE TABLE [E_10]
+( 
+	[store_number]       integer  NOT NULL 
+)
+go
+
+CREATE TABLE [E_11]
+( 
+	[movie_number]       integer  NULL ,
+	[store_number]       integer  NULL 
+)
+go
+
+ALTER TABLE [E_10]
+ADD CONSTRAINT [XPKE_10] PRIMARY KEY  CLUSTERED ([store_number] ASC)
+go
+
+ALTER TABLE [E_10]
+	ADD CONSTRAINT [R_21] FOREIGN KEY ([store_number]) REFERENCES [STORE]([store_number])
+		ON DELETE NO ACTION
+		ON UPDATE NO ACTION
+go
+
+ALTER TABLE [E_11]
+	ADD CONSTRAINT [R_22] FOREIGN KEY ([movie_number],[store_number]) REFERENCES [MOVIE_STORE]([movie_number],[store_number])
+		ON DELETE NO ACTION
+		ON UPDATE NO ACTION
+go
+
+
+CREATE TRIGGER tD_E_10 ON E_10 FOR DELETE AS
+/* erwin Builtin Trigger */
+/* DELETE trigger on E_10 */
+BEGIN
+  DECLARE  @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+    /* erwin Builtin Trigger */
+    /* STORE  E_10 on child delete no action */
+    /* ERWIN_RELATION:CHECKSUM="0001393c", PARENT_OWNER="", PARENT_TABLE="STORE"
+    CHILD_OWNER="", CHILD_TABLE="E_10"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_21", FK_COLUMNS="store_number" */
+    IF EXISTS (SELECT * FROM deleted,STORE
+      WHERE
+        /* %JoinFKPK(deleted,STORE," = "," AND") */
+        deleted.store_number = STORE.store_number AND
+        NOT EXISTS (
+          SELECT * FROM E_10
+          WHERE
+            /* %JoinFKPK(E_10,STORE," = "," AND") */
+            E_10.store_number = STORE.store_number
+        )
+    )
+    BEGIN
+      SELECT @errno  = 30010,
+             @errmsg = 'Cannot delete last E_10 because STORE exists.'
+      GOTO error
+    END
+
+
+    /* erwin Builtin Trigger */
+    RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
+CREATE TRIGGER tU_E_10 ON E_10 FOR UPDATE AS
+/* erwin Builtin Trigger */
+/* UPDATE trigger on E_10 */
+BEGIN
+  DECLARE  @numrows int,
+           @nullcnt int,
+           @validcnt int,
+           @insstore_number integer,
+           @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+
+  SELECT @numrows = @@rowcount
+  /* erwin Builtin Trigger */
+  /* STORE  E_10 on child update no action */
+  /* ERWIN_RELATION:CHECKSUM="00015972", PARENT_OWNER="", PARENT_TABLE="STORE"
+    CHILD_OWNER="", CHILD_TABLE="E_10"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_21", FK_COLUMNS="store_number" */
+  IF
+    /* %ChildFK(" OR",UPDATE) */
+    UPDATE(store_number)
+  BEGIN
+    SELECT @nullcnt = 0
+    SELECT @validcnt = count(*)
+      FROM inserted,STORE
+        WHERE
+          /* %JoinFKPK(inserted,STORE) */
+          inserted.store_number = STORE.store_number
+    /* %NotnullFK(inserted," IS NULL","select @nullcnt = count(*) from inserted where"," AND") */
+    
+    IF @validcnt + @nullcnt != @numrows
+    BEGIN
+      SELECT @errno  = 30007,
+             @errmsg = 'Cannot update E_10 because STORE does not exist.'
+      GOTO error
+    END
+  END
+
+
+  /* erwin Builtin Trigger */
+  RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
+
+
+CREATE TRIGGER tD_E_11 ON E_11 FOR DELETE AS
+/* erwin Builtin Trigger */
+/* DELETE trigger on E_11 */
+BEGIN
+  DECLARE  @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+    /* erwin Builtin Trigger */
+    /* MOVIE_STORE  E_11 on child delete no action */
+    /* ERWIN_RELATION:CHECKSUM="00018852", PARENT_OWNER="", PARENT_TABLE="MOVIE_STORE"
+    CHILD_OWNER="", CHILD_TABLE="E_11"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_22", FK_COLUMNS="movie_number""store_number" */
+    IF EXISTS (SELECT * FROM deleted,MOVIE_STORE
+      WHERE
+        /* %JoinFKPK(deleted,MOVIE_STORE," = "," AND") */
+        deleted.movie_number = MOVIE_STORE.movie_number AND
+        deleted.store_number = MOVIE_STORE.store_number AND
+        NOT EXISTS (
+          SELECT * FROM E_11
+          WHERE
+            /* %JoinFKPK(E_11,MOVIE_STORE," = "," AND") */
+            E_11.movie_number = MOVIE_STORE.movie_number AND
+            E_11.store_number = MOVIE_STORE.store_number
+        )
+    )
+    BEGIN
+      SELECT @errno  = 30010,
+             @errmsg = 'Cannot delete last E_11 because MOVIE_STORE exists.'
+      GOTO error
+    END
+
+
+    /* erwin Builtin Trigger */
+    RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
+CREATE TRIGGER tU_E_11 ON E_11 FOR UPDATE AS
+/* erwin Builtin Trigger */
+/* UPDATE trigger on E_11 */
+BEGIN
+  DECLARE  @numrows int,
+           @nullcnt int,
+           @validcnt int,
+           
+           @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+
+  SELECT @numrows = @@rowcount
+  /* erwin Builtin Trigger */
+  /* MOVIE_STORE  E_11 on child update no action */
+  /* ERWIN_RELATION:CHECKSUM="0001d2e0", PARENT_OWNER="", PARENT_TABLE="MOVIE_STORE"
+    CHILD_OWNER="", CHILD_TABLE="E_11"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_22", FK_COLUMNS="movie_number""store_number" */
+  IF
+    /* %ChildFK(" OR",UPDATE) */
+    UPDATE(movie_number) OR
+    UPDATE(store_number)
+  BEGIN
+    SELECT @nullcnt = 0
+    SELECT @validcnt = count(*)
+      FROM inserted,MOVIE_STORE
+        WHERE
+          /* %JoinFKPK(inserted,MOVIE_STORE) */
+          inserted.movie_number = MOVIE_STORE.movie_number and
+          inserted.store_number = MOVIE_STORE.store_number
+    /* %NotnullFK(inserted," IS NULL","select @nullcnt = count(*) from inserted where"," AND") */
+    select @nullcnt = count(*) from inserted where
+      inserted.movie_number IS NULL AND
+      inserted.store_number IS NULL
+    IF @validcnt + @nullcnt != @numrows
+    BEGIN
+      SELECT @errno  = 30007,
+             @errmsg = 'Cannot update E_11 because MOVIE_STORE does not exist.'
+      GOTO error
+    END
+  END
+
+
+  /* erwin Builtin Trigger */
+  RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
