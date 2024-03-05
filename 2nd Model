@@ -1,0 +1,568 @@
+
+CREATE TYPE [Id]
+	FROM VARCHAR(6) NULL
+go
+
+CREATE TYPE [Nam]
+	FROM VARCHAR(20) NULL
+go
+
+CREATE TYPE [FrstNam]
+	FROM VARCHAR(20) NULL
+go
+
+CREATE TYPE [LstNam]
+	FROM VARCHAR(20) NULL
+go
+
+CREATE TYPE [Desc]
+	FROM VARCHAR(40) NULL
+go
+
+CREATE TYPE [Cd]
+	FROM INTEGER NULL
+go
+
+CREATE TYPE [property]
+	FROM CHAR(18) NULL
+go
+
+CREATE TABLE [tbl_cust]
+( 
+	[cust_Id]            [Id]  NOT NULL ,
+	[cust_FrstNam]       [FrstNam] ,
+	[cust_LstNam]        [LstNam] 
+)
+go
+
+CREATE TABLE [tbl_prdt]
+( 
+	[prdt_Id]            [Id]  NOT NULL ,
+	[prdt_Desc]          [Desc] ,
+	[Prc]                char(18)  NULL 
+)
+go
+
+CREATE TABLE [tbl_Sls_Ordr]
+( 
+	[cust_Id]            [Id] ,
+	[Sls_Ordr_Id]        [Id]  NOT NULL ,
+	[Sls_Ordr_Desc]      char(18)  NULL 
+)
+go
+
+CREATE TABLE [tbl_Sls_Ordr_Line]
+( 
+	[Sls_Ordr_Id]        [Id]  NOT NULL ,
+	[Total_Amt]          char(18)  NULL ,
+	[prdt_Id]            [Id] 
+)
+go
+
+ALTER TABLE [tbl_cust]
+	ADD CONSTRAINT [XPKCustomer] PRIMARY KEY  CLUSTERED ([cust_Id] ASC)
+go
+
+ALTER TABLE [tbl_prdt]
+	ADD CONSTRAINT [XPKProduct] PRIMARY KEY  CLUSTERED ([product_identifier] ASC)
+go
+
+ALTER TABLE [tbl_Sls_Ordr]
+	ADD CONSTRAINT [XPKSales_Order] PRIMARY KEY  CLUSTERED ([sales_order_identifier] ASC)
+go
+
+ALTER TABLE [tbl_Sls_Ordr_Line]
+	ADD CONSTRAINT [XPKSales_Order_Line] PRIMARY KEY  CLUSTERED ([sales_order_identifier] ASC)
+go
+
+
+ALTER TABLE [tbl_Sls_Ordr]
+	ADD CONSTRAINT [R_6] FOREIGN KEY ([cust_Id]) REFERENCES [tbl_cust]([cust_Id])
+		ON DELETE NO ACTION
+		ON UPDATE NO ACTION
+go
+
+
+ALTER TABLE [tbl_Sls_Ordr_Line]
+	ADD CONSTRAINT [R_7] FOREIGN KEY ([Sls_Ordr_Id]) REFERENCES [tbl_Sls_Ordr]([Sls_Ordr_Id])
+		ON DELETE NO ACTION
+		ON UPDATE NO ACTION
+go
+
+ALTER TABLE [tbl_Sls_Ordr_Line]
+	ADD CONSTRAINT [R_8] FOREIGN KEY ([prdt_Id]) REFERENCES [tbl_prdt]([prdt_Id])
+		ON DELETE NO ACTION
+		ON UPDATE NO ACTION
+go
+
+
+CREATE TRIGGER tD_tbl_cust ON tbl_cust FOR DELETE AS
+/* erwin Builtin Trigger */
+/* DELETE trigger on tbl_cust */
+BEGIN
+  DECLARE  @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+    /* erwin Builtin Trigger */
+    /* tbl_cust Places tbl_Sls_Ordr on parent delete no action */
+    /* ERWIN_RELATION:CHECKSUM="00011ddd", PARENT_OWNER="", PARENT_TABLE="tbl_cust"
+    CHILD_OWNER="", CHILD_TABLE="tbl_Sls_Ordr"
+    P2C_VERB_PHRASE="Places", C2P_VERB_PHRASE="is Placed By", 
+    FK_CONSTRAINT="R_6", FK_COLUMNS="cust_Id" */
+    IF EXISTS (
+      SELECT * FROM deleted,tbl_Sls_Ordr
+      WHERE
+        /*  %JoinFKPK(tbl_Sls_Ordr,deleted," = "," AND") */
+        tbl_Sls_Ordr.cust_Id = deleted.cust_Id
+    )
+    BEGIN
+      SELECT @errno  = 30001,
+             @errmsg = 'Cannot delete tbl_cust because tbl_Sls_Ordr exists.'
+      GOTO error
+    END
+
+
+    /* erwin Builtin Trigger */
+    RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
+CREATE TRIGGER tU_tbl_cust ON tbl_cust FOR UPDATE AS
+/* erwin Builtin Trigger */
+/* UPDATE trigger on tbl_cust */
+BEGIN
+  DECLARE  @numrows int,
+           @nullcnt int,
+           @validcnt int,
+           @inscust_Id Id,
+           @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+
+  SELECT @numrows = @@rowcount
+  /* erwin Builtin Trigger */
+  /* tbl_cust Places tbl_Sls_Ordr on parent update no action */
+  /* ERWIN_RELATION:CHECKSUM="00013efb", PARENT_OWNER="", PARENT_TABLE="tbl_cust"
+    CHILD_OWNER="", CHILD_TABLE="tbl_Sls_Ordr"
+    P2C_VERB_PHRASE="Places", C2P_VERB_PHRASE="is Placed By", 
+    FK_CONSTRAINT="R_6", FK_COLUMNS="cust_Id" */
+  IF
+    /* %ParentPK(" OR",UPDATE) */
+    UPDATE(cust_Id)
+  BEGIN
+    IF EXISTS (
+      SELECT * FROM deleted,tbl_Sls_Ordr
+      WHERE
+        /*  %JoinFKPK(tbl_Sls_Ordr,deleted," = "," AND") */
+        tbl_Sls_Ordr.cust_Id = deleted.cust_Id
+    )
+    BEGIN
+      SELECT @errno  = 30005,
+             @errmsg = 'Cannot update tbl_cust because tbl_Sls_Ordr exists.'
+      GOTO error
+    END
+  END
+
+
+  /* erwin Builtin Trigger */
+  RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
+
+
+CREATE TRIGGER tD_tbl_prdt ON tbl_prdt FOR DELETE AS
+/* erwin Builtin Trigger */
+/* DELETE trigger on tbl_prdt */
+BEGIN
+  DECLARE  @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+    /* erwin Builtin Trigger */
+    /* tbl_prdt  tbl_Sls_Ordr_Line on parent delete no action */
+    /* ERWIN_RELATION:CHECKSUM="00013330", PARENT_OWNER="", PARENT_TABLE="tbl_prdt"
+    CHILD_OWNER="", CHILD_TABLE="tbl_Sls_Ordr_Line"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_8", FK_COLUMNS="product_identifier" */
+    IF EXISTS (
+      SELECT * FROM deleted,tbl_Sls_Ordr_Line
+      WHERE
+        /*  %JoinFKPK(tbl_Sls_Ordr_Line,deleted," = "," AND") */
+        tbl_Sls_Ordr_Line.product_identifier = deleted.product_identifier
+    )
+    BEGIN
+      SELECT @errno  = 30001,
+             @errmsg = 'Cannot delete tbl_prdt because tbl_Sls_Ordr_Line exists.'
+      GOTO error
+    END
+
+
+    /* erwin Builtin Trigger */
+    RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
+CREATE TRIGGER tU_tbl_prdt ON tbl_prdt FOR UPDATE AS
+/* erwin Builtin Trigger */
+/* UPDATE trigger on tbl_prdt */
+BEGIN
+  DECLARE  @numrows int,
+           @nullcnt int,
+           @validcnt int,
+           @insproduct_identifier Id,
+           @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+
+  SELECT @numrows = @@rowcount
+  /* erwin Builtin Trigger */
+  /* tbl_prdt  tbl_Sls_Ordr_Line on parent update no action */
+  /* ERWIN_RELATION:CHECKSUM="00014feb", PARENT_OWNER="", PARENT_TABLE="tbl_prdt"
+    CHILD_OWNER="", CHILD_TABLE="tbl_Sls_Ordr_Line"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_8", FK_COLUMNS="product_identifier" */
+  IF
+    /* %ParentPK(" OR",UPDATE) */
+    UPDATE(product_identifier)
+  BEGIN
+    IF EXISTS (
+      SELECT * FROM deleted,tbl_Sls_Ordr_Line
+      WHERE
+        /*  %JoinFKPK(tbl_Sls_Ordr_Line,deleted," = "," AND") */
+        tbl_Sls_Ordr_Line.product_identifier = deleted.product_identifier
+    )
+    BEGIN
+      SELECT @errno  = 30005,
+             @errmsg = 'Cannot update tbl_prdt because tbl_Sls_Ordr_Line exists.'
+      GOTO error
+    END
+  END
+
+
+  /* erwin Builtin Trigger */
+  RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
+
+
+CREATE TRIGGER tD_tbl_Sls_Ordr ON tbl_Sls_Ordr FOR DELETE AS
+/* erwin Builtin Trigger */
+/* DELETE trigger on tbl_Sls_Ordr */
+BEGIN
+  DECLARE  @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+    /* erwin Builtin Trigger */
+    /* tbl_Sls_Ordr Consists tbl_Sls_Ordr_Line on parent delete no action */
+    /* ERWIN_RELATION:CHECKSUM="00026720", PARENT_OWNER="", PARENT_TABLE="tbl_Sls_Ordr"
+    CHILD_OWNER="", CHILD_TABLE="tbl_Sls_Ordr_Line"
+    P2C_VERB_PHRASE="Consists", C2P_VERB_PHRASE="is part of", 
+    FK_CONSTRAINT="R_7", FK_COLUMNS="sales_order_identifier" */
+    IF EXISTS (
+      SELECT * FROM deleted,tbl_Sls_Ordr_Line
+      WHERE
+        /*  %JoinFKPK(tbl_Sls_Ordr_Line,deleted," = "," AND") */
+        tbl_Sls_Ordr_Line.sales_order_identifier = deleted.sales_order_identifier
+    )
+    BEGIN
+      SELECT @errno  = 30001,
+             @errmsg = 'Cannot delete tbl_Sls_Ordr because tbl_Sls_Ordr_Line exists.'
+      GOTO error
+    END
+
+    /* erwin Builtin Trigger */
+    /* tbl_cust Places tbl_Sls_Ordr on child delete no action */
+    /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="tbl_cust"
+    CHILD_OWNER="", CHILD_TABLE="tbl_Sls_Ordr"
+    P2C_VERB_PHRASE="Places", C2P_VERB_PHRASE="is Placed By", 
+    FK_CONSTRAINT="R_6", FK_COLUMNS="cust_Id" */
+    IF EXISTS (SELECT * FROM deleted,tbl_cust
+      WHERE
+        /* %JoinFKPK(deleted,tbl_cust," = "," AND") */
+        deleted.cust_Id = tbl_cust.cust_Id AND
+        NOT EXISTS (
+          SELECT * FROM tbl_Sls_Ordr
+          WHERE
+            /* %JoinFKPK(tbl_Sls_Ordr,tbl_cust," = "," AND") */
+            tbl_Sls_Ordr.cust_Id = tbl_cust.cust_Id
+        )
+    )
+    BEGIN
+      SELECT @errno  = 30010,
+             @errmsg = 'Cannot delete last tbl_Sls_Ordr because tbl_cust exists.'
+      GOTO error
+    END
+
+
+    /* erwin Builtin Trigger */
+    RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
+CREATE TRIGGER tU_tbl_Sls_Ordr ON tbl_Sls_Ordr FOR UPDATE AS
+/* erwin Builtin Trigger */
+/* UPDATE trigger on tbl_Sls_Ordr */
+BEGIN
+  DECLARE  @numrows int,
+           @nullcnt int,
+           @validcnt int,
+           @inssales_order_identifier Id,
+           @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+
+  SELECT @numrows = @@rowcount
+  /* erwin Builtin Trigger */
+  /* tbl_Sls_Ordr Consists tbl_Sls_Ordr_Line on parent update no action */
+  /* ERWIN_RELATION:CHECKSUM="0002dbfc", PARENT_OWNER="", PARENT_TABLE="tbl_Sls_Ordr"
+    CHILD_OWNER="", CHILD_TABLE="tbl_Sls_Ordr_Line"
+    P2C_VERB_PHRASE="Consists", C2P_VERB_PHRASE="is part of", 
+    FK_CONSTRAINT="R_7", FK_COLUMNS="sales_order_identifier" */
+  IF
+    /* %ParentPK(" OR",UPDATE) */
+    UPDATE(sales_order_identifier)
+  BEGIN
+    IF EXISTS (
+      SELECT * FROM deleted,tbl_Sls_Ordr_Line
+      WHERE
+        /*  %JoinFKPK(tbl_Sls_Ordr_Line,deleted," = "," AND") */
+        tbl_Sls_Ordr_Line.sales_order_identifier = deleted.sales_order_identifier
+    )
+    BEGIN
+      SELECT @errno  = 30005,
+             @errmsg = 'Cannot update tbl_Sls_Ordr because tbl_Sls_Ordr_Line exists.'
+      GOTO error
+    END
+  END
+
+  /* erwin Builtin Trigger */
+  /* tbl_cust Places tbl_Sls_Ordr on child update no action */
+  /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="tbl_cust"
+    CHILD_OWNER="", CHILD_TABLE="tbl_Sls_Ordr"
+    P2C_VERB_PHRASE="Places", C2P_VERB_PHRASE="is Placed By", 
+    FK_CONSTRAINT="R_6", FK_COLUMNS="cust_Id" */
+  IF
+    /* %ChildFK(" OR",UPDATE) */
+    UPDATE(cust_Id)
+  BEGIN
+    SELECT @nullcnt = 0
+    SELECT @validcnt = count(*)
+      FROM inserted,tbl_cust
+        WHERE
+          /* %JoinFKPK(inserted,tbl_cust) */
+          inserted.cust_Id = tbl_cust.cust_Id
+    /* %NotnullFK(inserted," IS NULL","select @nullcnt = count(*) from inserted where"," AND") */
+    select @nullcnt = count(*) from inserted where
+      inserted.cust_Id IS NULL
+    IF @validcnt + @nullcnt != @numrows
+    BEGIN
+      SELECT @errno  = 30007,
+             @errmsg = 'Cannot update tbl_Sls_Ordr because tbl_cust does not exist.'
+      GOTO error
+    END
+  END
+
+
+  /* erwin Builtin Trigger */
+  RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
+
+
+CREATE TRIGGER tD_tbl_Sls_Ordr_Line ON tbl_Sls_Ordr_Line FOR DELETE AS
+/* erwin Builtin Trigger */
+/* DELETE trigger on tbl_Sls_Ordr_Line */
+BEGIN
+  DECLARE  @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+    /* erwin Builtin Trigger */
+    /* tbl_prdt  tbl_Sls_Ordr_Line on child delete no action */
+    /* ERWIN_RELATION:CHECKSUM="0002f4e4", PARENT_OWNER="", PARENT_TABLE="tbl_prdt"
+    CHILD_OWNER="", CHILD_TABLE="tbl_Sls_Ordr_Line"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_8", FK_COLUMNS="product_identifier" */
+    IF EXISTS (SELECT * FROM deleted,tbl_prdt
+      WHERE
+        /* %JoinFKPK(deleted,tbl_prdt," = "," AND") */
+        deleted.product_identifier = tbl_prdt.product_identifier AND
+        NOT EXISTS (
+          SELECT * FROM tbl_Sls_Ordr_Line
+          WHERE
+            /* %JoinFKPK(tbl_Sls_Ordr_Line,tbl_prdt," = "," AND") */
+            tbl_Sls_Ordr_Line.product_identifier = tbl_prdt.product_identifier
+        )
+    )
+    BEGIN
+      SELECT @errno  = 30010,
+             @errmsg = 'Cannot delete last tbl_Sls_Ordr_Line because tbl_prdt exists.'
+      GOTO error
+    END
+
+    /* erwin Builtin Trigger */
+    /* tbl_Sls_Ordr Consists tbl_Sls_Ordr_Line on child delete no action */
+    /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="tbl_Sls_Ordr"
+    CHILD_OWNER="", CHILD_TABLE="tbl_Sls_Ordr_Line"
+    P2C_VERB_PHRASE="Consists", C2P_VERB_PHRASE="is part of", 
+    FK_CONSTRAINT="R_7", FK_COLUMNS="sales_order_identifier" */
+    IF EXISTS (SELECT * FROM deleted,tbl_Sls_Ordr
+      WHERE
+        /* %JoinFKPK(deleted,tbl_Sls_Ordr," = "," AND") */
+        deleted.sales_order_identifier = tbl_Sls_Ordr.sales_order_identifier AND
+        NOT EXISTS (
+          SELECT * FROM tbl_Sls_Ordr_Line
+          WHERE
+            /* %JoinFKPK(tbl_Sls_Ordr_Line,tbl_Sls_Ordr," = "," AND") */
+            tbl_Sls_Ordr_Line.sales_order_identifier = tbl_Sls_Ordr.sales_order_identifier
+        )
+    )
+    BEGIN
+      SELECT @errno  = 30010,
+             @errmsg = 'Cannot delete last tbl_Sls_Ordr_Line because tbl_Sls_Ordr exists.'
+      GOTO error
+    END
+
+
+    /* erwin Builtin Trigger */
+    RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
+CREATE TRIGGER tU_tbl_Sls_Ordr_Line ON tbl_Sls_Ordr_Line FOR UPDATE AS
+/* erwin Builtin Trigger */
+/* UPDATE trigger on tbl_Sls_Ordr_Line */
+BEGIN
+  DECLARE  @numrows int,
+           @nullcnt int,
+           @validcnt int,
+           @inssales_order_identifier Id,
+           @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+
+  SELECT @numrows = @@rowcount
+  /* erwin Builtin Trigger */
+  /* tbl_prdt  tbl_Sls_Ordr_Line on child update no action */
+  /* ERWIN_RELATION:CHECKSUM="00032390", PARENT_OWNER="", PARENT_TABLE="tbl_prdt"
+    CHILD_OWNER="", CHILD_TABLE="tbl_Sls_Ordr_Line"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_8", FK_COLUMNS="product_identifier" */
+  IF
+    /* %ChildFK(" OR",UPDATE) */
+    UPDATE(product_identifier)
+  BEGIN
+    SELECT @nullcnt = 0
+    SELECT @validcnt = count(*)
+      FROM inserted,tbl_prdt
+        WHERE
+          /* %JoinFKPK(inserted,tbl_prdt) */
+          inserted.product_identifier = tbl_prdt.product_identifier
+    /* %NotnullFK(inserted," IS NULL","select @nullcnt = count(*) from inserted where"," AND") */
+    select @nullcnt = count(*) from inserted where
+      inserted.product_identifier IS NULL
+    IF @validcnt + @nullcnt != @numrows
+    BEGIN
+      SELECT @errno  = 30007,
+             @errmsg = 'Cannot update tbl_Sls_Ordr_Line because tbl_prdt does not exist.'
+      GOTO error
+    END
+  END
+
+  /* erwin Builtin Trigger */
+  /* tbl_Sls_Ordr Consists tbl_Sls_Ordr_Line on child update no action */
+  /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="tbl_Sls_Ordr"
+    CHILD_OWNER="", CHILD_TABLE="tbl_Sls_Ordr_Line"
+    P2C_VERB_PHRASE="Consists", C2P_VERB_PHRASE="is part of", 
+    FK_CONSTRAINT="R_7", FK_COLUMNS="sales_order_identifier" */
+  IF
+    /* %ChildFK(" OR",UPDATE) */
+    UPDATE(sales_order_identifier)
+  BEGIN
+    SELECT @nullcnt = 0
+    SELECT @validcnt = count(*)
+      FROM inserted,tbl_Sls_Ordr
+        WHERE
+          /* %JoinFKPK(inserted,tbl_Sls_Ordr) */
+          inserted.sales_order_identifier = tbl_Sls_Ordr.sales_order_identifier
+    /* %NotnullFK(inserted," IS NULL","select @nullcnt = count(*) from inserted where"," AND") */
+    
+    IF @validcnt + @nullcnt != @numrows
+    BEGIN
+      SELECT @errno  = 30007,
+             @errmsg = 'Cannot update tbl_Sls_Ordr_Line because tbl_Sls_Ordr does not exist.'
+      GOTO error
+    END
+  END
+
+
+  /* erwin Builtin Trigger */
+  RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
