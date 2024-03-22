@@ -1291,3 +1291,607 @@ END
 go
 
 
+
+
+ALTER TABLE [gtg]
+DROP CONSTRAINT [R_2]
+go
+
+ALTER TABLE [t_gtg]
+DROP CONSTRAINT [R_7]
+go
+
+ALTER TABLE [t_gtg]
+DROP CONSTRAINT [R_6]
+go
+
+ALTER TABLE [gtg]
+DROP CONSTRAINT [XPKgtg]
+go
+
+ALTER TABLE [t_gtg]
+DROP CONSTRAINT [XPKt_gtg]
+go
+
+execute sp_rename '[gtg]', 'gtg83MD1346000'
+go
+
+execute sp_rename '[t_gtg]', 't_gtg83MD1346001'
+go
+
+ALTER TABLE [t]
+ADD [vhj]  char(18)  NULL
+go
+
+CREATE TABLE [E_9]
+( 
+	[vhj]                char(18)  NOT NULL ,
+	[b]                  char(18)  NULL 
+)
+go
+
+CREATE TABLE [gtg]
+( 
+	[fhd]                char(18)  NOT NULL ,
+	[gch]                char(18)  NULL ,
+	[hdcg]               char(18)  NOT NULL ,
+	[vhj]                char(18)  NOT NULL 
+)
+go
+
+CREATE TABLE [t_gtg]
+( 
+	[gch]                char(18)  NOT NULL ,
+	[fhd]                char(18)  NOT NULL ,
+	[hdcg]               char(18)  NOT NULL ,
+	[vhj]                char(18)  NOT NULL 
+)
+go
+
+ALTER TABLE [E_9]
+ADD CONSTRAINT [XPKE_9] PRIMARY KEY  CLUSTERED ([vhj] ASC)
+go
+
+ALTER TABLE [gtg]
+ADD CONSTRAINT [XPKgtg] PRIMARY KEY  CLUSTERED ([fhd] ASC,[hdcg] ASC,[vhj] ASC)
+go
+
+
+INSERT INTO [gtg] ([fhd], [hdcg], [gch]) SELECT [fhd], [hdcg], [gch] FROM gtg83MD1346000
+
+go
+
+ALTER TABLE [t_gtg]
+ADD CONSTRAINT [XPKt_gtg] PRIMARY KEY  CLUSTERED ([gch] ASC,[fhd] ASC,[hdcg] ASC,[vhj] ASC)
+go
+
+
+INSERT INTO [t_gtg] ([gch], [fhd], [hdcg]) SELECT [gch], [fhd], [hdcg] FROM t_gtg83MD1346001
+
+go
+
+ALTER TABLE [gtg]
+	ADD CONSTRAINT [R_2] FOREIGN KEY ([hdcg]) REFERENCES [fc]([hdcg])
+		ON DELETE NO ACTION
+		ON UPDATE NO ACTION
+go
+
+ALTER TABLE [gtg]
+	ADD CONSTRAINT [R_11] FOREIGN KEY ([vhj]) REFERENCES [E_9]([vhj])
+		ON DELETE NO ACTION
+		ON UPDATE NO ACTION
+go
+
+ALTER TABLE [t_gtg]
+	ADD CONSTRAINT [R_7] FOREIGN KEY ([fhd],[hdcg],[vhj]) REFERENCES [gtg]([fhd],[hdcg],[vhj])
+		ON DELETE NO ACTION
+		ON UPDATE NO ACTION
+go
+
+ALTER TABLE [t_gtg]
+	ADD CONSTRAINT [R_6] FOREIGN KEY ([gch]) REFERENCES [t]([gch])
+		ON DELETE NO ACTION
+		ON UPDATE NO ACTION
+go
+
+ALTER TABLE [t]
+	ADD CONSTRAINT [R_12] FOREIGN KEY ([vhj]) REFERENCES [E_9]([vhj])
+		ON DELETE NO ACTION
+		ON UPDATE NO ACTION
+go
+
+
+CREATE TRIGGER tD_E_9 ON E_9 FOR DELETE AS
+/* erwin Builtin Trigger */
+/* DELETE trigger on E_9 */
+BEGIN
+  DECLARE  @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+    /* erwin Builtin Trigger */
+    /* E_9  t on parent delete no action */
+    /* ERWIN_RELATION:CHECKSUM="0001b41d", PARENT_OWNER="", PARENT_TABLE="E_9"
+    CHILD_OWNER="", CHILD_TABLE="t"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_12", FK_COLUMNS="vhj" */
+    IF EXISTS (
+      SELECT * FROM deleted,t
+      WHERE
+        /*  %JoinFKPK(t,deleted," = "," AND") */
+        t.vhj = deleted.vhj
+    )
+    BEGIN
+      SELECT @errno  = 30001,
+             @errmsg = 'Cannot delete E_9 because t exists.'
+      GOTO error
+    END
+
+    /* erwin Builtin Trigger */
+    /* E_9  gtg on parent delete no action */
+    /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="E_9"
+    CHILD_OWNER="", CHILD_TABLE="gtg"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_11", FK_COLUMNS="vhj" */
+    IF EXISTS (
+      SELECT * FROM deleted,gtg
+      WHERE
+        /*  %JoinFKPK(gtg,deleted," = "," AND") */
+        gtg.vhj = deleted.vhj
+    )
+    BEGIN
+      SELECT @errno  = 30001,
+             @errmsg = 'Cannot delete E_9 because gtg exists.'
+      GOTO error
+    END
+
+
+    /* erwin Builtin Trigger */
+    RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
+CREATE TRIGGER tU_E_9 ON E_9 FOR UPDATE AS
+/* erwin Builtin Trigger */
+/* UPDATE trigger on E_9 */
+BEGIN
+  DECLARE  @numrows int,
+           @nullcnt int,
+           @validcnt int,
+           @insvhj char(18),
+           @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+
+  SELECT @numrows = @@rowcount
+  /* erwin Builtin Trigger */
+  /* E_9  t on parent update no action */
+  /* ERWIN_RELATION:CHECKSUM="0001e14c", PARENT_OWNER="", PARENT_TABLE="E_9"
+    CHILD_OWNER="", CHILD_TABLE="t"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_12", FK_COLUMNS="vhj" */
+  IF
+    /* %ParentPK(" OR",UPDATE) */
+    UPDATE(vhj)
+  BEGIN
+    IF EXISTS (
+      SELECT * FROM deleted,t
+      WHERE
+        /*  %JoinFKPK(t,deleted," = "," AND") */
+        t.vhj = deleted.vhj
+    )
+    BEGIN
+      SELECT @errno  = 30005,
+             @errmsg = 'Cannot update E_9 because t exists.'
+      GOTO error
+    END
+  END
+
+  /* erwin Builtin Trigger */
+  /* E_9  gtg on parent update no action */
+  /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="E_9"
+    CHILD_OWNER="", CHILD_TABLE="gtg"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_11", FK_COLUMNS="vhj" */
+  IF
+    /* %ParentPK(" OR",UPDATE) */
+    UPDATE(vhj)
+  BEGIN
+    IF EXISTS (
+      SELECT * FROM deleted,gtg
+      WHERE
+        /*  %JoinFKPK(gtg,deleted," = "," AND") */
+        gtg.vhj = deleted.vhj
+    )
+    BEGIN
+      SELECT @errno  = 30005,
+             @errmsg = 'Cannot update E_9 because gtg exists.'
+      GOTO error
+    END
+  END
+
+
+  /* erwin Builtin Trigger */
+  RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
+
+
+CREATE TRIGGER tD_gtg ON gtg FOR DELETE AS
+/* erwin Builtin Trigger */
+/* DELETE trigger on gtg */
+BEGIN
+  DECLARE  @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+    /* erwin Builtin Trigger */
+    /* gtg  t_gtg on parent delete no action */
+    /* ERWIN_RELATION:CHECKSUM="0002f46b", PARENT_OWNER="", PARENT_TABLE="gtg"
+    CHILD_OWNER="", CHILD_TABLE="t_gtg"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_7", FK_COLUMNS="fhd""hdcg""vhj" */
+    IF EXISTS (
+      SELECT * FROM deleted,t_gtg
+      WHERE
+        /*  %JoinFKPK(t_gtg,deleted," = "," AND") */
+        t_gtg.fhd = deleted.fhd AND
+        t_gtg.hdcg = deleted.hdcg AND
+        t_gtg.vhj = deleted.vhj
+    )
+    BEGIN
+      SELECT @errno  = 30001,
+             @errmsg = 'Cannot delete gtg because t_gtg exists.'
+      GOTO error
+    END
+
+    /* erwin Builtin Trigger */
+    /* E_9  gtg on child delete no action */
+    /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="E_9"
+    CHILD_OWNER="", CHILD_TABLE="gtg"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_11", FK_COLUMNS="vhj" */
+    IF EXISTS (SELECT * FROM deleted,E_9
+      WHERE
+        /* %JoinFKPK(deleted,E_9," = "," AND") */
+        deleted.vhj = E_9.vhj AND
+        NOT EXISTS (
+          SELECT * FROM gtg
+          WHERE
+            /* %JoinFKPK(gtg,E_9," = "," AND") */
+            gtg.vhj = E_9.vhj
+        )
+    )
+    BEGIN
+      SELECT @errno  = 30010,
+             @errmsg = 'Cannot delete last gtg because E_9 exists.'
+      GOTO error
+    END
+
+    /* erwin Builtin Trigger */
+    /* fc  gtg on child delete no action */
+    /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="fc"
+    CHILD_OWNER="", CHILD_TABLE="gtg"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_2", FK_COLUMNS="hdcg" */
+    IF EXISTS (SELECT * FROM deleted,fc
+      WHERE
+        /* %JoinFKPK(deleted,fc," = "," AND") */
+        deleted.hdcg = fc.hdcg AND
+        NOT EXISTS (
+          SELECT * FROM gtg
+          WHERE
+            /* %JoinFKPK(gtg,fc," = "," AND") */
+            gtg.hdcg = fc.hdcg
+        )
+    )
+    BEGIN
+      SELECT @errno  = 30010,
+             @errmsg = 'Cannot delete last gtg because fc exists.'
+      GOTO error
+    END
+
+
+    /* erwin Builtin Trigger */
+    RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
+CREATE TRIGGER tU_gtg ON gtg FOR UPDATE AS
+/* erwin Builtin Trigger */
+/* UPDATE trigger on gtg */
+BEGIN
+  DECLARE  @numrows int,
+           @nullcnt int,
+           @validcnt int,
+           @insfhd char(18), 
+           @inshdcg char(18), 
+           @insvhj char(18),
+           @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+
+  SELECT @numrows = @@rowcount
+  /* erwin Builtin Trigger */
+  /* gtg  t_gtg on parent update no action */
+  /* ERWIN_RELATION:CHECKSUM="000377d8", PARENT_OWNER="", PARENT_TABLE="gtg"
+    CHILD_OWNER="", CHILD_TABLE="t_gtg"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_7", FK_COLUMNS="fhd""hdcg""vhj" */
+  IF
+    /* %ParentPK(" OR",UPDATE) */
+    UPDATE(fhd) OR
+    UPDATE(hdcg) OR
+    UPDATE(vhj)
+  BEGIN
+    IF EXISTS (
+      SELECT * FROM deleted,t_gtg
+      WHERE
+        /*  %JoinFKPK(t_gtg,deleted," = "," AND") */
+        t_gtg.fhd = deleted.fhd AND
+        t_gtg.hdcg = deleted.hdcg AND
+        t_gtg.vhj = deleted.vhj
+    )
+    BEGIN
+      SELECT @errno  = 30005,
+             @errmsg = 'Cannot update gtg because t_gtg exists.'
+      GOTO error
+    END
+  END
+
+  /* erwin Builtin Trigger */
+  /* E_9  gtg on child update no action */
+  /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="E_9"
+    CHILD_OWNER="", CHILD_TABLE="gtg"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_11", FK_COLUMNS="vhj" */
+  IF
+    /* %ChildFK(" OR",UPDATE) */
+    UPDATE(vhj)
+  BEGIN
+    SELECT @nullcnt = 0
+    SELECT @validcnt = count(*)
+      FROM inserted,E_9
+        WHERE
+          /* %JoinFKPK(inserted,E_9) */
+          inserted.vhj = E_9.vhj
+    /* %NotnullFK(inserted," IS NULL","select @nullcnt = count(*) from inserted where"," AND") */
+    
+    IF @validcnt + @nullcnt != @numrows
+    BEGIN
+      SELECT @errno  = 30007,
+             @errmsg = 'Cannot update gtg because E_9 does not exist.'
+      GOTO error
+    END
+  END
+
+  /* erwin Builtin Trigger */
+  /* fc  gtg on child update no action */
+  /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="fc"
+    CHILD_OWNER="", CHILD_TABLE="gtg"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_2", FK_COLUMNS="hdcg" */
+  IF
+    /* %ChildFK(" OR",UPDATE) */
+    UPDATE(hdcg)
+  BEGIN
+    SELECT @nullcnt = 0
+    SELECT @validcnt = count(*)
+      FROM inserted,fc
+        WHERE
+          /* %JoinFKPK(inserted,fc) */
+          inserted.hdcg = fc.hdcg
+    /* %NotnullFK(inserted," IS NULL","select @nullcnt = count(*) from inserted where"," AND") */
+    
+    IF @validcnt + @nullcnt != @numrows
+    BEGIN
+      SELECT @errno  = 30007,
+             @errmsg = 'Cannot update gtg because fc does not exist.'
+      GOTO error
+    END
+  END
+
+
+  /* erwin Builtin Trigger */
+  RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
+
+
+CREATE TRIGGER tD_t_gtg ON t_gtg FOR DELETE AS
+/* erwin Builtin Trigger */
+/* DELETE trigger on t_gtg */
+BEGIN
+  DECLARE  @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+    /* erwin Builtin Trigger */
+    /* gtg  t_gtg on child delete no action */
+    /* ERWIN_RELATION:CHECKSUM="00024e4d", PARENT_OWNER="", PARENT_TABLE="gtg"
+    CHILD_OWNER="", CHILD_TABLE="t_gtg"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_7", FK_COLUMNS="fhd""hdcg""vhj" */
+    IF EXISTS (SELECT * FROM deleted,gtg
+      WHERE
+        /* %JoinFKPK(deleted,gtg," = "," AND") */
+        deleted.fhd = gtg.fhd AND
+        deleted.hdcg = gtg.hdcg AND
+        deleted.vhj = gtg.vhj AND
+        NOT EXISTS (
+          SELECT * FROM t_gtg
+          WHERE
+            /* %JoinFKPK(t_gtg,gtg," = "," AND") */
+            t_gtg.fhd = gtg.fhd AND
+            t_gtg.hdcg = gtg.hdcg AND
+            t_gtg.vhj = gtg.vhj
+        )
+    )
+    BEGIN
+      SELECT @errno  = 30010,
+             @errmsg = 'Cannot delete last t_gtg because gtg exists.'
+      GOTO error
+    END
+
+    /* erwin Builtin Trigger */
+    /* t  t_gtg on child delete no action */
+    /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="t"
+    CHILD_OWNER="", CHILD_TABLE="t_gtg"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_6", FK_COLUMNS="gch" */
+    IF EXISTS (SELECT * FROM deleted,t
+      WHERE
+        /* %JoinFKPK(deleted,t," = "," AND") */
+        deleted.gch = t.gch AND
+        NOT EXISTS (
+          SELECT * FROM t_gtg
+          WHERE
+            /* %JoinFKPK(t_gtg,t," = "," AND") */
+            t_gtg.gch = t.gch
+        )
+    )
+    BEGIN
+      SELECT @errno  = 30010,
+             @errmsg = 'Cannot delete last t_gtg because t exists.'
+      GOTO error
+    END
+
+
+    /* erwin Builtin Trigger */
+    RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
+CREATE TRIGGER tU_t_gtg ON t_gtg FOR UPDATE AS
+/* erwin Builtin Trigger */
+/* UPDATE trigger on t_gtg */
+BEGIN
+  DECLARE  @numrows int,
+           @nullcnt int,
+           @validcnt int,
+           @insgch char(18), 
+           @insfhd char(18), 
+           @inshdcg char(18), 
+           @insvhj char(18),
+           @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+
+  SELECT @numrows = @@rowcount
+  /* erwin Builtin Trigger */
+  /* gtg  t_gtg on child update no action */
+  /* ERWIN_RELATION:CHECKSUM="00028f66", PARENT_OWNER="", PARENT_TABLE="gtg"
+    CHILD_OWNER="", CHILD_TABLE="t_gtg"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_7", FK_COLUMNS="fhd""hdcg""vhj" */
+  IF
+    /* %ChildFK(" OR",UPDATE) */
+    UPDATE(fhd) OR
+    UPDATE(hdcg) OR
+    UPDATE(vhj)
+  BEGIN
+    SELECT @nullcnt = 0
+    SELECT @validcnt = count(*)
+      FROM inserted,gtg
+        WHERE
+          /* %JoinFKPK(inserted,gtg) */
+          inserted.fhd = gtg.fhd and
+          inserted.hdcg = gtg.hdcg and
+          inserted.vhj = gtg.vhj
+    /* %NotnullFK(inserted," IS NULL","select @nullcnt = count(*) from inserted where"," AND") */
+    
+    IF @validcnt + @nullcnt != @numrows
+    BEGIN
+      SELECT @errno  = 30007,
+             @errmsg = 'Cannot update t_gtg because gtg does not exist.'
+      GOTO error
+    END
+  END
+
+  /* erwin Builtin Trigger */
+  /* t  t_gtg on child update no action */
+  /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="t"
+    CHILD_OWNER="", CHILD_TABLE="t_gtg"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_6", FK_COLUMNS="gch" */
+  IF
+    /* %ChildFK(" OR",UPDATE) */
+    UPDATE(gch)
+  BEGIN
+    SELECT @nullcnt = 0
+    SELECT @validcnt = count(*)
+      FROM inserted,t
+        WHERE
+          /* %JoinFKPK(inserted,t) */
+          inserted.gch = t.gch
+    /* %NotnullFK(inserted," IS NULL","select @nullcnt = count(*) from inserted where"," AND") */
+    
+    IF @validcnt + @nullcnt != @numrows
+    BEGIN
+      SELECT @errno  = 30007,
+             @errmsg = 'Cannot update t_gtg because t does not exist.'
+      GOTO error
+    END
+  END
+
+
+  /* erwin Builtin Trigger */
+  RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
+
+
+DROP TABLE IF EXISTS gtg83MD1346000
+go
+
+
+DROP TABLE IF EXISTS t_gtg83MD1346001
+go
